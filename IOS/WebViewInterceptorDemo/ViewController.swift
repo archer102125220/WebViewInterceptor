@@ -74,7 +74,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
             <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open (僅 Android UAv2 生效)</button>
             
             <!-- 4. 延遲超過 Chromium 5秒寬限期的 window.open (雙平台皆失效) -->
-            <button onclick="setTimeout(() => { let w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">13. 延遲 6 秒後 window.open (超出 5 秒寬限期，雙平台失效)</button>
+            <button onclick="setTimeout(() => { const w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">13. 延遲 6 秒後 window.open (超出 5 秒寬限期，雙平台失效)</button>
 
             <!-- 5. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
             <button onclick="
@@ -82,38 +82,48 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                     .then(res => res.json())
                     .then(() => {
                         // 經過真實的網路請求後，手勢 Token 幾乎必定遺失
-                        let w = window.open('https://www.google.com', '_blank');
+                        const w = window.open('https://www.google.com', '_blank');
                         if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
                     });
             ">14. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
-            <!-- 6. 模擬前端嘗試用 a tag 繞過 window.open 的情境 -->
             <button onclick="
-                let a = document.createElement('a');
+                const a = document.createElement('a');
                 a.href = 'https://www.google.com';
                 a.target = '_blank';
                 a.click();
             ">15. 同步動態建立 a tag 並 click (繞過 window.open)</button>
+
+            <button onclick="
+                Promise.resolve().then(() => {
+                    const a = document.createElement('a');
+                    a.href = 'https://www.google.com';
+                    a.target = '_blank';
+                    a.click();
+                });
+            ">16. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)</button>
             
             <button onclick="
                 setTimeout(() => {
-                    let a = document.createElement('a');
+                    const a = document.createElement('a');
                     a.href = 'https://www.google.com';
                     a.target = '_blank';
                     a.click();
                     // 這裡無法像 window.open 一樣回傳 null 檢查，因為 click() 是 void
                     // 只能靠肉眼觀察畫面是否有彈出
                 }, 6000);
-            ">16. 延遲 6 秒動態建立 a tag 並 click (超出寬限期，雙平台皆封殺)</button>
+            ">17. Macrotask (延遲 6 秒) 動態建立 a tag (超出寬限期，雙平台皆封殺)</button>
 
             <button onclick="
-                Promise.resolve().then(() => {
-                    let a = document.createElement('a');
-                    a.href = 'https://www.google.com';
-                    a.target = '_blank';
-                    a.click();
-                });
-            ">17. Microtask (Promise) 動態建立 a tag 並 click (iOS 視嚴格模式可能阻擋)</button>
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(res => res.json())
+                    .then(() => {
+                        const a = document.createElement('a');
+                        a.href = 'https://www.google.com';
+                        a.target = '_blank';
+                        a.click();
+                    });
+            ">18. 真實情境還原：Fetch API 後動態 a tag (Android 視網路速度 <5s 放行，iOS 必封殺)</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
