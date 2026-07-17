@@ -7,23 +7,12 @@
 ## 1. 跨 iOS 版本的防禦一致性 (Token 遺失鐵律)
 
 Apple 的 WebKit 引擎對於「**非同步回呼會沒收 User Gesture Token**」這項資安鐵律，已經存在非常多年。
+- 不同於 Android Chromium 引擎擁有的「User Activation v2 (UAv2)」5 秒鐘寬限期，iOS WebKit **沒有**任何秒數的寬限期。
+- 只要使用者的點擊事件進入了非同步 Callback (特別是會讓 Event Loop 重新排程的 Macrotask，如 `setTimeout` 或 `fetch`)，代表實體點擊的憑證就會立刻失效 (0 秒寬限)。
+- 隨後觸發的 `window.open` 就會被 WebKit 引擎底層判定為背景惡意彈窗而封殺。
 
-- **不存在寬限期**：不同於 Android Chromium 引擎擁有的「User Activation v2 (UAv2)」5 秒鐘寬限期，iOS WebKit **沒有**任何秒數的寬限期。
-- **只要非同步必定失敗 (Macrotask 必擋)**：不管是 iOS 15、iOS 16 還是最新的 iOS 18，只要使用者的點擊事件進入了需要等待瀏覽器 Event Loop 重新排程的宏任務 (Macrotask，例如 `setTimeout`)，這張代表實體點擊的憑證就會立刻失效 (0 秒寬限)。隨後觸發的 `window.open` 就會被 WebKit 引擎底層判定為背景惡意彈窗而封殺。
-
-### 特別解析：Microtask (Promise) 的模糊地帶
-前端開發中的微任務 (Microtask，例如純粹的 `Promise.resolve().then()`) 是一個特例。因為微任務會在當前 Event Loop 的週期 (Tick) 結束前就立刻插隊執行，並未將控制權交還給瀏覽器。
-- **純微任務的存活機率 (WebKit 的歷史演進與版本差異)**：WebKit 對於「微任務是否能繼承點擊 Token」的判定，在歷史上經歷過多次反覆：
-  - **【極度嚴苛期】iOS 12.2 以前**：早期的 WebKit 未完善 Promise 的手勢傳遞機制，將 Token 嚴格綁定在 `onclick` 的**同步呼叫疊 (Synchronous Call Stack)** 上。只要同步程式碼跑完，微任務一律被視為無使用者互動而遭封殺。
-  - **【短暫放行期】iOS 12.2 ~ iOS 14 早期**：Apple 為了向 HTML5 標準靠攏，修正了這個機制，讓純微任務 (`Promise.resolve()`) 能夠合法繼承點擊 Token，這段時間內的微任務彈窗**能成功彈出**。
-  - **【薛丁格狀態】iOS 15 以後**：隨著 ITP (智慧防追蹤) 與防彈窗濫用機制的極端強化，即使 WebKit 底層允許微任務傳遞 Token，但在以下 **3 種真實情境**中，微任務的 Token 仍會被無情沒收：
-    1. **ITP 判定為「跨站追蹤」**：如果 `window.open` 準備跳轉的網址，被系統內建的 ITP 機制判定為高風險的廣告追蹤網域或是不斷轉址的 Affiliate Link，WebKit 會直接以保護隱私為由封殺該次微任務彈窗。
-    2. **原生端配置極度保守 (iOS 15+ 的新特性)**：若原生開發者將 `WKPreferences` 中的 `javaScriptCanOpenWindowsAutomatically` 設為 `false` (這也是預設值)，在舊版系統中這只會擋掉 `onload` 自動彈窗；但在 iOS 15 以後，這個設定會連帶讓 WebKit 進入「極度敏感模式」，拒絕承認微任務內的 Token，只認純同步程式碼。
-    3. **社群軟體的隱形攔截**：在 LINE 或 Facebook 的 In-App Browser 裡，官方往往會偷偷注入一段自己的 JavaScript (WKUserScript) 來側錄使用者的點擊行為，這個側錄過程可能涉及非同步處理，導致「您的點擊」傳遞到「您的程式碼」時，早就已經被降級成 Macrotask 了，此時您自己寫的 `Promise` 根本回天乏術。
-
-- **嚴格模式與網路延遲**：然而，只要 `Promise` 內部包含了真正的網路請求 (如 `fetch().then()`)，等待網路回應本身就會跨越宏任務，Token 依然會 100% 遺失。
-
-因此，在不同的 iOS 現代版本中，針對非同步彈窗的嚴格阻擋行為是**高度一致且不可依賴的**。
+> [!NOTE]
+> 關於 iOS WebKit 在底層 Event Loop 中對 Macrotask 與 Microtask (Promise) 的歷史演進與處置差異，已統一整理於：[async_popup_blocker_history.md](file:///Users/parkerchen/Desktop/code/WebViewInterceptorDemo/knowledge/async_popup_blocker_history.md) 的第 4 節。
 
 ## 2. 真實世界更嚴格的挑戰：第三方 App 內建瀏覽器 (In-App Browser)
 

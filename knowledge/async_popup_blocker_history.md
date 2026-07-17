@@ -71,18 +71,29 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 - **權責分明**：前端專心處理商業邏輯（取得網址），開啟視窗這種需要掌控螢幕畫面的事交還給原生 App。
 
 
-## 4. 為什麼在嚴格模式下，Android 卻能攔截成功？(Chromium UAv2 機制)
+## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 
-即使將 `javaScriptCanOpenWindowsAutomatically` 設為 `false`，Android WebView 在特定條件下依然能成功執行 `fetch` 與 `setTimeout` 的彈窗。這牽涉到底層瀏覽器引擎的重大差異：
+即使將原生的彈窗權限關閉，雙平台底層瀏覽器引擎對於「使用者點擊通行證 (User Gesture Token)」的生命週期，有著截然不同的底層實作：
 
-- **iOS (WebKit 引擎)**：極度嚴格。只要使用者的點擊事件進入了非同步 Callback（例如 `fetch` 的 `.then` 或 `setTimeout`），WebKit 通常會立刻沒收「實體點擊通行證 (User Gesture Token)」。因此上述兩種非同步跳轉必定失敗。
-- **Android (Chromium 引擎)**：自 Chrome 72 開始引入了 **「User Activation v2 (UAv2)」** 機制。
-  - 當使用者發生實體點擊時，系統會發放一個 **短暫的啟動憑證 (Transient Activation)**。
-  - 在 Android WebView 的環境與特定版本下，這個憑證的存活時間可長達 **5 秒鐘**。
-  - **最關鍵的是：Chromium 允許這個憑證穿透非同步的 `Promise` (包含 `fetch`) 與 `setTimeout`！**
-  - 因此，只要 API 回應速度或 `setTimeout` 的延遲時間沒有超過憑證的有效期限（例如測試中的 3 秒），當執行到 `window.open` 時，憑證仍在有效期限內，Android 就會判定這「依然是使用者點擊觸發的」，進而放行彈窗。
+### Android (Chromium 引擎)：UAv2 5 秒寬限期
+自 Chrome 72 開始引入了 **「User Activation v2 (UAv2)」** 機制。
+- 當使用者發生實體點擊時，系統會發放一個 **短暫的啟動憑證 (Transient Activation)**。
+- 在 Android WebView 的環境與特定版本下，這個憑證的存活時間可長達 **5 秒鐘**。
+- **最關鍵的是：Chromium 允許這個憑證穿透非同步的 `Promise` (包含 `fetch`) 與 `setTimeout`！**
+- 因此，只要 API 回應速度或 `setTimeout` 的延遲時間沒有超過憑證的有效期限（例如測試中的 3 秒），當執行到 `window.open` 時，憑證仍在有效期限內，Android 就會判定這「依然是使用者點擊觸發的」，進而放行彈窗。一旦超過 5 秒，依然會面臨失效命運。
 
-**結論**：Android 的放行機制依賴於「非同步任務必須在憑證時效內完成」的條件。一旦遇到網路嚴重延遲（超過憑證有效秒數），依然會面臨失效的命運。因此，採用 **JSBridge** 依舊是唯一能保證雙平台 100% 穩定運作的標準解法。
+### iOS (WebKit 引擎)：0 秒寬限期與薛丁格的微任務
+iOS WebKit **完全沒有**任何秒數的寬限期。它的 Token 存活度取決於 JavaScript 的 Event Loop 排程：
+
+1. **Macrotask (宏任務) 必擋**：不管是 iOS 15、iOS 16 還是最新的 iOS 18，只要使用者的點擊事件進入了需要等待瀏覽器 Event Loop 重新排程的宏任務 (例如 `setTimeout`)，Token 就會立刻失效 (0 秒寬限)。隨後觸發的 `window.open` 會被判定為背景惡意彈窗而封殺。
+
+2. **Microtask (微任務) 的模糊地帶**：例如純粹的 `Promise.resolve().then()`，因為它會在當前 Event Loop 的週期 (Tick) 結束前立刻插隊執行，未交還控制權。
+   - **WebKit 的歷史演進與版本差異**：WebKit 對於微任務是否能繼承 Token，在歷史上經歷過多次反覆：
+     - **【極度嚴苛期】iOS 12.2 以前**：未完善 Promise 傳遞機制，Token 嚴格綁定在 `onclick` 的同步呼叫疊 (Synchronous Call Stack) 上。同步程式碼跑完，微任務一律封殺。
+     - **【短暫放行期】iOS 12.2 ~ iOS 14 早期**：為了向 HTML5 標準靠攏，修正機制讓純微任務能合法繼承 Token，此段時間能成功彈出。
+     - **【薛丁格狀態】iOS 15 以後**：即使底層允許微任務傳遞，由於 ITP (防追蹤) 與防彈窗濫用機制強化，如果原生端設為極度保守模式，或是在 In-App Browser 內被隱形攔截，微任務的 Token 仍可能隨時被強制沒收。
+     
+**總結**：由於跨平台雙引擎的生命週期判定機制完全不一致，採用 **JSBridge** 依舊是唯一能保證雙平台 100% 穩定運作的標準解法。
 
 ## 5. 參考資料 (References)
 - 📖 [Chromium 官方部落格：User Activation v2 (UAv2) 機制介紹](https://developer.chrome.com/blog/user-activation)
