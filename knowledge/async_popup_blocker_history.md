@@ -87,7 +87,7 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 ## 5. 參考資料 (References)
 - 📖 [Chromium 官方部落格：User Activation v2 (UAv2) 機制介紹](https://developer.chrome.com/blog/user-activation)
 - 📖 [MDN Web Docs: Transient Activation (短暫啟動憑證時效說明)](https://developer.mozilla.org/en-US/docs/Glossary/Transient_activation)
-- 📖 [Chromium 原始碼：user_activation_state.h (揭露 5 秒鐘常數 kActivationLifespan)](https://github.com/chromium/chromium/blob/main/third_party/blink/public/common/frame/user_activation_state.h)
+- 📖 [Chromium 原始碼：user_activation_state.h (揭露 5 秒鐘常數 kActivationLifespan)](https://github.com/chromium/chromium/blob/7115760f2e6dafa470a579182b2709ded743e683/third_party/blink/public/common/frame/user_activation_state.h#L23)
 - 📖 [Android 官方文件：setJavaScriptCanOpenWindowsAutomatically](https://developer.android.com/reference/android/webkit/WebSettings#setJavaScriptCanOpenWindowsAutomatically(boolean))
 - 📖 [Apple Developer 文件：WKPreferences.javaScriptCanOpenWindowsAutomatically](https://developer.apple.com/documentation/webkit/wkpreferences/javascriptcanopenwindowsautomatically)
 
