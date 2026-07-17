@@ -55,10 +55,12 @@ class MainActivity : AppCompatActivity() {
             // 允許開新視窗 (支援 window.open 與 target="_blank")
             setSupportMultipleWindows(true)
             
-            // 【關鍵殺手設定：防禦惡意彈窗】
-            // 很多上線的 App (或舊版預設) 這裡都是 false。
-            // 只要設為 false，任何失去「同步實體點擊」手勢的 window.open 都會被底層直接抹殺！
-            // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
+            // 【關鍵設定：模擬高資安防禦模式】
+            // 企業級 App 通常會將此設為 false 避免廣告彈窗。
+            // 但受惠於 Chromium 的「User Activation v2 (UAv2)」機制，
+            // 只要使用者的實體點擊發生在 5 秒內 (kActivationLifespan)，
+            // 即使是透過 async/await、fetch、setTimeout 觸發的 window.open 依然會被放行。
+            // 網路延遲超過 5 秒時，此憑證才會失效。
             javaScriptCanOpenWindowsAutomatically = false 
         }
         
@@ -161,9 +163,12 @@ class MainActivity : AppCompatActivity() {
                 </form>
                 
                 <!-- 3. 延遲過久的 window.open (iOS 底層可能阻擋, Android 可能放行) -->
-                <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open</button>
+                <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open (僅 Android UAv2 生效)</button>
                 
-                <!-- 4. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
+                <!-- 4. 延遲超過 Chromium 5秒寬限期的 window.open (雙平台皆失效) -->
+                <button onclick="setTimeout(() => { let w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">13. 延遲 6 秒後 window.open (超出 5 秒寬限期，雙平台失效)</button>
+                
+                <!-- 5. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
                 <button onclick="
                     fetch('https://jsonplaceholder.typicode.com/todos/1')
                         .then(res => res.json())
@@ -172,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                             let w = window.open('https://www.google.com', '_blank');
                             if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
                         });
-                ">13. 真實情境還原：Fetch API 回傳後才 window.open</button>
+                ">14. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
                 <hr style="margin-top: 30px; margin-bottom: 20px;">
                 <h3>原有的自定義攔截測試</h3>

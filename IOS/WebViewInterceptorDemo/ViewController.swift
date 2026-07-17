@@ -11,10 +11,12 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         // 1. 初始化 WKWebViewConfiguration
         let preferences = WKPreferences()
         
-        // 【關鍵殺手設定：防禦惡意彈窗】
-        // 許多 App 在實作時這裡會設為 false (或未特別開啟，WKWebView 預設可能因版本而異)。
-        // 只要是 false，任何失去「同步實體點擊」手勢的 window.open 就會被 WebKit 核心直接抹殺！
-        // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
+        // 【關鍵設定：模擬高資安防禦模式】
+        // 企業級 App 通常會將此設為 false (WKWebView 預設為 false)。
+        // iOS WebKit 引擎對於實體點擊 (User Gesture Token) 的管控極度嚴格，
+        // 完全不像 Android (Chromium UAv2) 還有 5 秒的寬限期。
+        // 只要進入 async/await、fetch、setTimeout 的非同步回呼，Token 就會立刻失效，
+        // 隨後的 window.open 將會被底層當作惡意彈窗無情抹殺！
         preferences.javaScriptCanOpenWindowsAutomatically = false
         
         let config = WKWebViewConfiguration()
@@ -68,9 +70,12 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
             </form>
             
             <!-- 3. 延遲過久的 window.open (iOS 底層可能阻擋, Android 可能放行) -->
-            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open</button>
+            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open (僅 Android UAv2 生效)</button>
+            
+            <!-- 4. 延遲超過 Chromium 5秒寬限期的 window.open (雙平台皆失效) -->
+            <button onclick="setTimeout(() => { let w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">13. 延遲 6 秒後 window.open (超出 5 秒寬限期，雙平台失效)</button>
 
-            <!-- 4. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
+            <!-- 5. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
@@ -79,7 +84,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                         let w = window.open('https://www.google.com', '_blank');
                         if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
                     });
-            ">13. 真實情境還原：Fetch API 回傳後才 window.open</button>
+            ">14. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
