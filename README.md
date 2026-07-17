@@ -20,7 +20,7 @@
 
 ## 如何運行與測試
 
-### 🍏 iOS 版測試教學
+### 🍏 iOS 版測試方法
 
 **【在模擬器上測試】 (推薦，最簡單)**
 1. 使用 Xcode 打開 `IOS/WebViewInterceptorDemo.xcodeproj`。
@@ -40,7 +40,7 @@
 
 ---
 
-### 🤖 Android 版測試教學
+### 🤖 Android 版測試方法
 
 **【在模擬器 / 實體機上測試】**
 1. **使用 Android Studio**：
