@@ -149,8 +149,8 @@ class MainActivity : AppCompatActivity() {
                 <h3>腳本觸發 (Event Loop 測試)</h3>
                 <button onclick="Promise.resolve().then(() => location.href='https://www.google.com')">6. Microtask (Promise) -> location.href</button>
                 <button onclick="setTimeout(() => location.href='https://www.google.com', 1000)">7. Macrotask (setTimeout) -> location.href</button>
-                <button onclick="Promise.resolve().then(() => window.open('https://www.google.com', '_blank'))">8. Microtask (Promise) -> window.open 另開分頁 (_blank)</button>
-                <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">9. Macrotask (setTimeout) -> window.open 另開分頁 (_blank)</button>
+                <button onclick="Promise.resolve().then(() => window.open('https://www.google.com', '_blank'))">8. Microtask (Promise) -> window.open 另開分頁 (_blank，iOS 視版本與嚴格模式可能阻擋)</button>
+                <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">9. Macrotask (setTimeout 1s) -> window.open 另開分頁 (_blank，僅 Android UAv2 生效，iOS 必擋)</button>
 
                 <hr style="margin-top: 30px; margin-bottom: 20px;">
                 <h3 style="color: red;">攔截失效 / 死角測試</h3>

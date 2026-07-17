@@ -9,9 +9,14 @@
 Apple 的 WebKit 引擎對於「**非同步回呼會沒收 User Gesture Token**」這項資安鐵律，已經存在非常多年。
 
 - **不存在寬限期**：不同於 Android Chromium 引擎擁有的「User Activation v2 (UAv2)」5 秒鐘寬限期，iOS WebKit **沒有**任何秒數的寬限期。
-- **只要非同步必定失敗**：不管是 iOS 15、iOS 16 還是最新的 iOS 18，只要使用者的點擊事件進入了 `fetch`、`Promise` 或是 `setTimeout`，這張代表實體點擊的憑證就會立刻失效。隨後觸發的 `window.open` 就會被 WebKit 引擎底層判定為背景惡意彈窗而封殺。
+- **只要非同步必定失敗 (Macrotask 必擋)**：不管是 iOS 15、iOS 16 還是最新的 iOS 18，只要使用者的點擊事件進入了需要等待瀏覽器 Event Loop 重新排程的宏任務 (Macrotask，例如 `setTimeout`)，這張代表實體點擊的憑證就會立刻失效 (0 秒寬限)。隨後觸發的 `window.open` 就會被 WebKit 引擎底層判定為背景惡意彈窗而封殺。
 
-因此，在不同的 iOS 現代版本中，針對非同步彈窗的嚴格阻擋行為是**高度一致**的。
+### 特別解析：Microtask (Promise) 的模糊地帶
+前端開發中的微任務 (Microtask，例如純粹的 `Promise.resolve().then()`) 是一個特例。因為微任務會在當前 Event Loop 的週期 (Tick) 結束前就立刻插隊執行，並未將控制權交還給瀏覽器。
+- **純微任務的存活機率**：在部分 iOS WebKit 版本或較寬鬆的設定下，因為執行緒尚未切換，純微任務裡的 `window.open` **有機會**保留 Token 並成功彈出。
+- **嚴格模式與網路延遲**：然而，只要 `Promise` 內部包含了真正的網路請求 (如 `fetch().then()`)，等待網路回應本身就會跨越宏任務，Token 依然會 100% 遺失。此外，在某些被原生開發者嚴格管控的 In-App Browser 或是受到進階防追蹤策略保護的系統中，即使是純微任務也可能被一視同仁地直接阻擋。
+
+因此，在不同的 iOS 現代版本中，針對非同步彈窗的嚴格阻擋行為是**高度一致且不可依賴的**。
 
 ## 2. 真實世界更嚴格的挑戰：第三方 App 內建瀏覽器 (In-App Browser)
 
