@@ -59,5 +59,8 @@
 
 ---
 
-## 開發者備註：歷史冷知識
+## 開發者備註：歷史冷知識與架構文件
 專案內的原始碼附帶了非常詳盡的「歷史註解」，記錄了 Android 早期 `shouldOverrideUrlLoading` 無法攔截腳本跳轉的痛苦黑歷史，以及 iOS 早期 `UIWebView` 對 `window.open` 裝死無反應的坑，非常適合想深入理解 WebView 底層演進的開發者閱讀。
+
+除此之外，本專案也整理了進階的架構知識：
+* 📖 [跨平台 WebView 的非同步彈窗防禦機制與 JSBridge 架構](knowledge/async_popup_blocker_history.md)：詳細解釋為何 Vue/React 的非同步 `window.open` 會被原生 App 阻擋，以及標準的 JSBridge 解決方案。
