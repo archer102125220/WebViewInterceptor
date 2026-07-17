@@ -65,3 +65,4 @@
 除此之前，本專案也整理了進階的架構知識：
 * 📖 [跨平台 WebView 的非同步彈窗防禦機制與 JSBridge 架構](knowledge/async_popup_blocker_history.md)：詳細解釋為何 Vue/React 的非同步 `window.open` 會被原生 App 阻擋，以及標準的 JSBridge 解決方案。
 * 📖 [iOS WebView 嚴格度解析：從 WebKit 政策到第三方 App 限制](knowledge/ios_webview_strictness_and_in_app_browsers.md)：解析 iOS 各版本 WebKit 阻擋鐵律，以及在 LINE、Facebook 等真實環境 In-App Browser 中的極端封殺狀況。
+* 📖 [Android WebView 碎片化解析：Chromium 核心與第三方內核的影響](knowledge/android_webview_fragmentation.md)：探討為何在多數搭載 GMS 的 Android 手機表現一致，但在微信 (X5 內核) 或無 Google 服務設備上卻依然會失效。
