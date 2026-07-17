@@ -84,6 +84,11 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
 **結論**：Android 的放行機制依賴於「非同步任務必須在憑證時效內完成」的條件。一旦遇到網路嚴重延遲（超過憑證有效秒數），依然會面臨失效的命運。因此，採用 **JSBridge** 依舊是唯一能保證雙平台 100% 穩定運作的標準解法。
 
+## 5. 參考資料 (References)
+- 📖 [Chromium 官方部落格：User Activation v2 (UAv2) 機制介紹](https://developer.chrome.com/blog/user-activation)
+- 📖 [Android 官方文件：setJavaScriptCanOpenWindowsAutomatically](https://developer.android.com/reference/android/webkit/WebSettings#setJavaScriptCanOpenWindowsAutomatically(boolean))
+- 📖 [Apple Developer 文件：WKPreferences.javaScriptCanOpenWindowsAutomatically](https://developer.apple.com/documentation/webkit/wkpreferences/1536545-javascriptcanopenwindowsautomati)
+
 ---
 
 ### 附錄：實機測試結果
