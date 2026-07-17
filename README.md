@@ -14,7 +14,7 @@
 3. **攔截死角 / 失效測試**：
     * **SPA 路由切換 (`history.pushState`)**：雙平台皆攔截失效（無重新載入行為）。
     * **表單 POST 跳轉 (`<form method="POST">`)**：Android 攔截穿透失效（直接跳轉），iOS 成功攔截。
-    * **過度延遲的彈窗 (`setTimeout` > 3秒 + `window.open`)**：iOS 系統底層可能因缺乏使用者互動而直接阻擋，Android 通常會放行。
+    * **非同步與延遲彈窗 (`setTimeout` + `window.open`)**：iOS WebKit 因 0 秒寬限期會立刻封殺；Android Chromium 則受惠於 UAv2 機制，在 5 秒的寬限期內通常會放行。
 
 ---
 
@@ -73,6 +73,6 @@
 專案內的原始碼附帶了非常詳盡的「歷史註解」，記錄了 Android 早期 `shouldOverrideUrlLoading` 無法攔截腳本跳轉的痛苦黑歷史，以及 iOS 早期 `UIWebView` 對 `window.open` 裝死無反應的坑，非常適合想深入理解 WebView 底層演進的開發者閱讀。
 
 除此之前，本專案也整理了進階的架構知識：
-* 📖 [跨平台 WebView 的非同步彈窗防禦機制與 JSBridge 架構](knowledge/async_popup_blocker_history.md)：詳細解釋為何 Vue/React 的非同步 `window.open` 會被原生 App 阻擋，以及標準的 JSBridge 解決方案。
-* 📖 [iOS WebView 嚴格度解析：從 WebKit 政策到第三方 App 限制](knowledge/ios_webview_strictness_and_in_app_browsers.md)：解析 iOS 各版本 WebKit 阻擋鐵律，以及在 LINE、Facebook 等真實環境 In-App Browser 中的極端封殺狀況。
+* 📖 [跨平台 WebView 的非同步彈窗防禦機制與 JSBridge 架構](knowledge/async_popup_blocker_history.md)：詳細解釋為何 Vue/React 的非同步 `window.open` 會被原生 App 阻擋，**深入探討 Event Loop (Microtask / Macrotask) 底層機制與雙平台引擎差異**，以及標準的 JSBridge 解決方案。
+* 📖 [iOS WebView 嚴格度解析：從 WebKit 政策到第三方 App 限制](knowledge/ios_webview_strictness_and_in_app_browsers.md)：聚焦 iOS 真實上線環境會踩的坑，解析 **ITP 隱私防追蹤封殺、原生保守配置**，以及在 LINE、Facebook 等真實環境 In-App Browser 中的極端封殺狀況與版本生命週期。
 * 📖 [Android WebView 碎片化解析：Chromium 核心與第三方內核的影響](knowledge/android_webview_fragmentation.md)：探討為何在多數搭載 GMS 的 Android 手機表現一致，但在微信 (X5 內核) 或無 Google 服務設備上卻依然會失效。
