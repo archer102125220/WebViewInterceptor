@@ -53,16 +53,16 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                 a.href = 'https://www.google.com';
                 a.target = '_blank';
                 a.click();
-            ">15. 同步動態建立 a tag 並 click (繞過 window.open)</button>
+            ">3. 同步動態建立 a tag 並 click (繞過 window.open)</button>
             
             <h3>🟢 雙平台皆成功：JS 同步跳轉</h3>
-            <button onclick="location.href='https://www.google.com'">3. location.href 當頁跳轉</button>
-            <button onclick="window.open('https://www.google.com', '_self')">4. window.open 當頁 (_self)</button>
-            <button onclick="window.open('https://www.google.com', '_blank')">5. window.open 另開分頁 (_blank)</button>
+            <button onclick="location.href='https://www.google.com'">4. location.href 當頁跳轉</button>
+            <button onclick="window.open('https://www.google.com', '_self')">5. window.open 當頁 (_self)</button>
+            <button onclick="window.open('https://www.google.com', '_blank')">6. window.open 另開分頁 (_blank)</button>
 
             <h3>🟢 雙平台皆成功：非同步與 Event Loop (無視窗開啟限制)</h3>
-            <button onclick="Promise.resolve().then(() => location.href='https://www.google.com')">6. Microtask (Promise) -> location.href</button>
-            <button onclick="setTimeout(() => location.href='https://www.google.com', 1000)">7. Macrotask (setTimeout) -> location.href</button>
+            <button onclick="Promise.resolve().then(() => location.href='https://www.google.com')">7. Microtask (Promise) -> location.href</button>
+            <button onclick="setTimeout(() => location.href='https://www.google.com', 1000)">8. Macrotask (setTimeout) -> location.href</button>
             <button onclick="
                 Promise.resolve().then(() => {
                     const a = document.createElement('a');
@@ -70,14 +70,14 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                     a.target = '_blank';
                     a.click();
                 });
-            ">16. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)</button>
+            ">9. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)</button>
+            <button onclick="Promise.resolve().then(() => window.open('https://www.google.com', '_blank'))">10. Microtask (Promise) -> window.open (同 Tick 傳遞，雙平台成功)</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>🟡 平台限制與差異：只有某一方會成功</h3>
             
             <h4 style="margin-bottom: 5px; color: #d39e00;">僅 Android 成功 (iOS 視為惡意彈窗封殺)</h4>
-            <button onclick="Promise.resolve().then(() => window.open('https://www.google.com', '_blank'))">8. Microtask (Promise) -> window.open (iOS 視嚴格模式可能封殺)</button>
-            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">9. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)</button>
+            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">11. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)</button>
             <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -86,7 +86,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                         const w = window.open('https://www.google.com', '_blank');
                         if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
                     });
-            ">14. 真實情境：Fetch API 回傳後才 window.open</button>
+            ">13. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s 放行)</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
@@ -96,17 +96,17 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                         a.target = '_blank';
                         a.click();
                     });
-            ">18. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)</button>
+            ">14. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)</button>
 
             <h4 style="margin-bottom: 5px; color: #d39e00;">僅 iOS 成功 (Android 原生攔截器穿透)</h4>
             <form method="POST" action="https://www.google.com" style="margin: 10px;">
-                <button type="submit" style="background: #dc3545; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">11. 表單 POST 跳轉 (Android 穿透 / iOS 成功攔截)</button>
+                <button type="submit" style="background: #dc3545; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">15. 表單 POST 跳轉 (Android 穿透 / iOS 成功攔截)</button>
             </form>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3 style="color: red;">🔴 雙平台皆失效 (攔截死角與超時封殺)</h3>
-            <button onclick="history.pushState(null, '', '#new-page'); alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！')">10. SPA 路由切換 (history.pushState)</button>
-            <button onclick="setTimeout(() => { const w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">13. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)</button>
+            <button onclick="history.pushState(null, '', '#new-page'); alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！')">16. SPA 路由切換 (history.pushState)</button>
+            <button onclick="setTimeout(() => { const w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">17. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)</button>
             <button onclick="
                 setTimeout(() => {
                     const a = document.createElement('a');
@@ -114,7 +114,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                     a.target = '_blank';
                     a.click();
                 }, 6000);
-            ">17. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)</button>
+            ">18. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
