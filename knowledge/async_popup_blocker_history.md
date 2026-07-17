@@ -69,3 +69,8 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 - **100% 成功率**：這等同於「前端呼叫原生 App 的 Function」，完全繞過 WebView 的惡意彈窗阻擋機制。
 - **無視非同步延遲**：不管 API 請求花多久時間，只要一呼叫 JSBridge，原生端必定會執行，沒有手勢憑證過期的問題。
 - **權責分明**：前端專心處理商業邏輯（取得網址），開啟視窗這種需要掌控螢幕畫面的事交還給原生 App。
+
+
+### 實機測試結果：
+- Iphone Xs iOS 18.7.9:  settimeout 及 fetch 均失敗。
+- Samsung Galaxy Fold5 Android 16(OneUI 8.5): settimeout 及 fetch 均成功。
