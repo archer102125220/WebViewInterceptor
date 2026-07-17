@@ -86,6 +86,34 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                     });
             ">14. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
+            <!-- 6. 模擬前端嘗試用 a tag 繞過 window.open 的情境 -->
+            <button onclick="
+                let a = document.createElement('a');
+                a.href = 'https://www.google.com';
+                a.target = '_blank';
+                a.click();
+            ">15. 同步動態建立 a tag 並 click (繞過 window.open)</button>
+            
+            <button onclick="
+                setTimeout(() => {
+                    let a = document.createElement('a');
+                    a.href = 'https://www.google.com';
+                    a.target = '_blank';
+                    a.click();
+                    // 這裡無法像 window.open 一樣回傳 null 檢查，因為 click() 是 void
+                    // 只能靠肉眼觀察畫面是否有彈出
+                }, 6000);
+            ">16. 延遲 6 秒動態建立 a tag 並 click (超出寬限期，雙平台皆封殺)</button>
+
+            <button onclick="
+                Promise.resolve().then(() => {
+                    let a = document.createElement('a');
+                    a.href = 'https://www.google.com';
+                    a.target = '_blank';
+                    a.click();
+                });
+            ">17. Microtask (Promise) 動態建立 a tag 並 click (iOS 視嚴格模式可能阻擋)</button>
+
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
             <button onclick="location.href='myapp://open_profile?user_id=123'">觸發 myapp:// 協定</button>
