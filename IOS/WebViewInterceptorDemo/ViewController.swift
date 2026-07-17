@@ -15,7 +15,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         // 許多 App 在實作時這裡會設為 false (或未特別開啟，WKWebView 預設可能因版本而異)。
         // 只要是 false，任何失去「同步實體點擊」手勢的 window.open 就會被 WebKit 核心直接抹殺！
         // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
-        preferences.javaScriptCanOpenWindowsAutomatically = true
+        preferences.javaScriptCanOpenWindowsAutomatically = false
         
         let config = WKWebViewConfiguration()
         config.preferences = preferences

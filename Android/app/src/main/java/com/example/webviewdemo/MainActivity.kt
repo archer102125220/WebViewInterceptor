@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             // 很多上線的 App (或舊版預設) 這裡都是 false。
             // 只要設為 false，任何失去「同步實體點擊」手勢的 window.open 都會被底層直接抹殺！
             // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
-            javaScriptCanOpenWindowsAutomatically = true 
+            javaScriptCanOpenWindowsAutomatically = false 
         }
         
         // 設置 WebChromeClient 來支援 window.open 與 target="_blank"
