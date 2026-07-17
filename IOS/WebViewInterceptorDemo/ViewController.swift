@@ -9,13 +9,16 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         super.viewDidLoad()
 
         // 1. 初始化 WKWebViewConfiguration
-        let preferences = WKWebpagePreferences()
-        preferences.allowsContentJavaScript = true
+        let preferences = WKPreferences()
+        
+        // 【關鍵殺手設定：防禦惡意彈窗】
+        // 許多 App 在實作時這裡會設為 false (或未特別開啟，WKWebView 預設可能因版本而異)。
+        // 只要是 false，任何失去「同步實體點擊」手勢的 window.open 就會被 WebKit 核心直接抹殺！
+        // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
+        preferences.javaScriptCanOpenWindowsAutomatically = true
         
         let config = WKWebViewConfiguration()
-        config.defaultWebpagePreferences = preferences
-        // 允許透過 JS 開啟新視窗
-        config.preferences.javaScriptCanOpenWindowsAutomatically = true
+        config.preferences = preferences
 
         // 2. 建立 WKWebView
         webView = WKWebView(frame: self.view.bounds, configuration: config)
@@ -66,6 +69,17 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
             
             <!-- 3. 延遲過久的 window.open (iOS 底層可能阻擋, Android 可能放行) -->
             <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open</button>
+
+            <!-- 4. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
+            <button onclick="
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(res => res.json())
+                    .then(() => {
+                        // 經過真實的網路請求後，手勢 Token 幾乎必定遺失
+                        let w = window.open('https://www.google.com', '_blank');
+                        if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
+                    });
+            ">13. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>

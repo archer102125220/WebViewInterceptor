@@ -48,10 +48,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(webView)
 
         // 啟用 JavaScript 與多視窗支援
-        webView.settings.javaScriptEnabled = true
-        webView.settings.setSupportMultipleWindows(true)
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true
-
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            
+            // 允許開新視窗 (支援 window.open 與 target="_blank")
+            setSupportMultipleWindows(true)
+            
+            // 【關鍵殺手設定：防禦惡意彈窗】
+            // 很多上線的 App (或舊版預設) 這裡都是 false。
+            // 只要設為 false，任何失去「同步實體點擊」手勢的 window.open 都會被底層直接抹殺！
+            // (這會導致我們畫面上的第 13 顆按鈕直接跳出大失敗的警告)
+            javaScriptCanOpenWindowsAutomatically = true 
+        }
+        
         // 設置 WebChromeClient 來支援 window.open 與 target="_blank"
         webView.webChromeClient = object : android.webkit.WebChromeClient() {
             override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: android.os.Message?): Boolean {
@@ -152,6 +162,17 @@ class MainActivity : AppCompatActivity() {
                 
                 <!-- 3. 延遲過久的 window.open (iOS 底層可能阻擋, Android 可能放行) -->
                 <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">12. 延遲 3 秒後 window.open</button>
+                
+                <!-- 4. 模擬真實 Vue 開發情境：先打 API 再開啟 -->
+                <button onclick="
+                    fetch('https://jsonplaceholder.typicode.com/todos/1')
+                        .then(res => res.json())
+                        .then(() => {
+                            // 經過真實的網路請求後，手勢 Token 幾乎必定遺失
+                            let w = window.open('https://www.google.com', '_blank');
+                            if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
+                        });
+                ">13. 真實情境還原：Fetch API 回傳後才 window.open</button>
 
                 <hr style="margin-top: 30px; margin-bottom: 20px;">
                 <h3>原有的自定義攔截測試</h3>
