@@ -130,8 +130,9 @@ class MainActivity : AppCompatActivity() {
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body { font-family: sans-serif; padding: 20px; text-align: center; }
-                    button { padding: 15px; margin: 10px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 8px; width: 100%; box-sizing: border-box; }
-                    a { display: block; padding: 15px; margin: 10px; font-size: 16px; background: #28a745; color: white; border-radius: 8px; text-decoration: none; box-sizing: border-box; }
+                    button { padding: 15px; margin: 10px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 8px; width: 100%; box-sizing: border-box; transition: transform 0.1s, opacity 0.1s; }
+                    a { display: block; padding: 15px; margin: 10px; font-size: 16px; background: #28a745; color: white; border-radius: 8px; text-decoration: none; box-sizing: border-box; transition: transform 0.1s, opacity 0.1s; }
+                    button:active, a:active { transform: scale(0.96); opacity: 0.8; }
                 </style>
             </head>
             <body>
