@@ -71,19 +71,23 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 - **權責分明**：前端專心處理商業邏輯（取得網址），開啟視窗這種需要掌控螢幕畫面的事交還給原生 App。
 
 
-### 實機測試結果：
-- Iphone Xs iOS 18.7.9:  `setTimeout` 及 `fetch` 均失敗。
-- Samsung Galaxy Fold5 Android 16 (OneUI 8.5): `setTimeout` 及 `fetch` 均成功。
-
 ## 4. 為什麼在嚴格模式下，Android 卻能攔截成功？(Chromium UAv2 機制)
 
-根據您在 Samsung Fold 5 的實測，即使把 `javaScriptCanOpenWindowsAutomatically` 設為 `false`，Android WebView 的 `fetch` 卻依然成功彈窗。這牽涉到底層瀏覽器引擎的重大差異：
+即使將 `javaScriptCanOpenWindowsAutomatically` 設為 `false`，Android WebView 在特定條件下依然能成功執行 `fetch` 與 `setTimeout` 的彈窗。這牽涉到底層瀏覽器引擎的重大差異：
 
-- **iOS (WebKit 引擎)**：極度嚴格。只要使用者的點擊事件進入了非同步 Callback（例如 `fetch` 的 `.then` 或 `setTimeout`），WebKit 通常會立刻沒收使用者的「實體點擊通行證 (User Gesture Token)」。因此必定失敗。
+- **iOS (WebKit 引擎)**：極度嚴格。只要使用者的點擊事件進入了非同步 Callback（例如 `fetch` 的 `.then` 或 `setTimeout`），WebKit 通常會立刻沒收「實體點擊通行證 (User Gesture Token)」。因此上述兩種非同步跳轉必定失敗。
 - **Android (Chromium 引擎)**：自 Chrome 72 開始引入了 **「User Activation v2 (UAv2)」** 機制。
-  - 當使用者實體點擊時，系統會發放一個 **短暫的啟動憑證 (Transient Activation)**。
-  - 這個憑證的存活時間大約為 **1 秒鐘**。
-  - **最關鍵的是：Chromium 允許這個憑證穿透非同步的 `Promise` (包含 `fetch`)！**
-  - 因此，只要您的後端 API 回應速度夠快（小於 1 秒），當執行到 `window.open` 時，憑證仍在有效期限內，Android 就會判定這「依然是使用者點擊觸發的」，進而放行彈窗。
+  - 當使用者發生實體點擊時，系統會發放一個 **短暫的啟動憑證 (Transient Activation)**。
+  - 在 Android WebView 的環境與特定版本下，這個憑證的存活時間可長達 **5 秒鐘**。
+  - **最關鍵的是：Chromium 允許這個憑證穿透非同步的 `Promise` (包含 `fetch`) 與 `setTimeout`！**
+  - 因此，只要 API 回應速度或 `setTimeout` 的延遲時間沒有超過憑證的有效期限（例如測試中的 3 秒），當執行到 `window.open` 時，憑證仍在有效期限內，Android 就會判定這「依然是使用者點擊觸發的」，進而放行彈窗。
 
-**結論**：Android 雖然放行了，但這依賴於「API 必須在 1 秒內極速回傳」的嚴苛條件。一旦遇到網路延遲，依然會面臨失效的命運。因此，採用 **JSBridge** 依舊是唯一能保證雙平台 100% 穩定運作的終極解法。
+**結論**：Android 的放行機制依賴於「非同步任務必須在憑證時效內完成」的條件。一旦遇到網路嚴重延遲（超過憑證有效秒數），依然會面臨失效的命運。因此，採用 **JSBridge** 依舊是唯一能保證雙平台 100% 穩定運作的標準解法。
+
+---
+
+### 附錄：實機測試結果
+- **測試設備 A**：Iphone Xs (iOS 18.7.9)
+  - 測試結果：`setTimeout` (3秒) 及 `fetch` 非同步彈窗 **均失敗**。
+- **測試設備 B**：Samsung Galaxy Fold5 (Android 16 / OneUI 8.5)
+  - 測試結果：`setTimeout` (3秒) 及 `fetch` 非同步彈窗 **均成功**。
