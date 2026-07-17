@@ -59,6 +59,16 @@
 
 ---
 
+### 測試結果錄影
+
+#### 1. iOS 測試結果 (測試設備：Iphone Xs, iOS 18.7.9)
+![iOS 攔截測試結果](./test-result/ios-webview-interceptor-test.gif)
+
+#### 2. Android 測試結果 (測試設備：Samsung Galaxy Fold5, Android 16 / OneUI 8.5)
+![Android 攔截測試結果](./test-result/android-webview-interceptor-test.gif)
+
+---
+
 ## 開發者備註：歷史冷知識與架構文件
 專案內的原始碼附帶了非常詳盡的「歷史註解」，記錄了 Android 早期 `shouldOverrideUrlLoading` 無法攔截腳本跳轉的痛苦黑歷史，以及 iOS 早期 `UIWebView` 對 `window.open` 裝死無反應的坑，非常適合想深入理解 WebView 底層演進的開發者閱讀。
 
