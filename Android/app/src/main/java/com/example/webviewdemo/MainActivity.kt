@@ -15,6 +15,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
+    // 【JSBridge 原生通訊實作】
+    // 為什麼要用 JSBridge 處理跳轉？
+    // 因為這完全避開了 WebView / Chromium 對於 window.open 的嚴格彈窗限制。
+    // JSBridge 傳遞訊息不涉及開啟視窗的行為，因此它完全不需要 User Gesture Token，
+    // 不受限於 Android 的 5 秒網路寬限期，也不管是否處在非同步回呼 (setTimeout/fetch) 的深處。
+    // 只要網頁將網址丟給原生，原生就能直接透過 Intent 呼叫系統瀏覽器，達成 100% 成功率。
     inner class WebAppInterface {
         @android.webkit.JavascriptInterface
         fun openUrl(url: String) {

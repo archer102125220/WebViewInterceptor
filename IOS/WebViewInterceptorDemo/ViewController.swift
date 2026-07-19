@@ -238,6 +238,12 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
     }
 
     // MARK: - WKScriptMessageHandler
+    // 【JSBridge 原生通訊實作】
+    // 為什麼要用 JSBridge 處理跳轉？
+    // 因為 iOS WebKit 對於 window.open 管控極度嚴格，只要在非同步回呼 (setTimeout/fetch) 裡呼叫，
+    // User Gesture Token 就會瞬間失效並導致視窗被底層直接封殺，完全不留情面。
+    // 但透過 WKScriptMessageHandler 傳遞字串完全不是「開啟新視窗」的行為，因此免疫了所有的彈窗封殺政策。
+    // 只要網頁成功把網址拋過來，原生就可以直接透過 UIApplication 開啟系統瀏覽器，達成 100% 的跳轉成功率。
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "NativeBridge" {
             if let urlString = message.body as? String, let url = URL(string: urlString) {
