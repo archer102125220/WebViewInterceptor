@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
+class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
 
     var webView: WKWebView!
 
@@ -21,6 +21,11 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         
         let config = WKWebViewConfiguration()
         config.preferences = preferences
+        
+        // 註冊 JSBridge
+        let contentController = WKUserContentController()
+        contentController.add(self, name: "NativeBridge")
+        config.userContentController = contentController
 
         // 2. 建立 WKWebView
         webView = WKWebView(frame: self.view.bounds, configuration: config)
@@ -41,6 +46,17 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                 a { display: block; padding: 15px; margin: 10px; font-size: 16px; background: #28a745; color: white; border-radius: 8px; text-decoration: none; box-sizing: border-box; transition: transform 0.1s, opacity 0.1s; }
                 button:active, a:active { transform: scale(0.96); opacity: 0.8; }
             </style>
+            <script>
+                function callNativeBridgeToOpenUrl(url) {
+                    if (window.NativeBridge && window.NativeBridge.openUrl) {
+                        window.NativeBridge.openUrl(url);
+                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.NativeBridge) {
+                        window.webkit.messageHandlers.NativeBridge.postMessage(url);
+                    } else {
+                        alert('找不到 NativeBridge');
+                    }
+                }
+            </script>
         </head>
         <body>
             <h2>iOS WKWebView 跳轉測試</h2>
@@ -115,6 +131,17 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
                     a.click();
                 }, 6000);
             ">18. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)</button>
+
+            <hr style="margin-top: 30px; margin-bottom: 20px;">
+            <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
+            <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">19. 同步觸發 JSBridge 開啟網址</button>
+            <button onclick="Promise.resolve().then(() => callNativeBridgeToOpenUrl('https://www.google.com'))">20. Microtask (Promise) 觸發 JSBridge 開啟網址</button>
+            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 1000)">21. Macrotask (setTimeout) 觸發 JSBridge 開啟網址</button>
+            <button onclick="
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(res => res.json())
+                    .then(() => callNativeBridgeToOpenUrl('https://www.google.com'));
+            ">22. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
@@ -208,5 +235,18 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
         
         // iOS 最棒的地方：回傳 nil 就等同於攔截掉這次的新視窗建立，完全不會像 Chromium 一樣閃退！
         return nil
+    }
+
+    // MARK: - WKScriptMessageHandler
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "NativeBridge" {
+            if let urlString = message.body as? String, let url = URL(string: urlString) {
+                DispatchQueue.main.async {
+                    if UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    }
+                }
+            }
+        }
     }
 }
