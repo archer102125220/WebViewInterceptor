@@ -136,12 +136,13 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
             <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
             <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">19. 同步觸發 JSBridge 開啟網址</button>
             <button onclick="Promise.resolve().then(() => callNativeBridgeToOpenUrl('https://www.google.com'))">20. Microtask (Promise) 觸發 JSBridge 開啟網址</button>
-            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 1000)">21. Macrotask (setTimeout) 觸發 JSBridge 開啟網址</button>
+            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 1000)">21. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址</button>
+            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 6000)">22. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
                     .then(() => callNativeBridgeToOpenUrl('https://www.google.com'));
-            ">22. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址</button>
+            ">23. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
