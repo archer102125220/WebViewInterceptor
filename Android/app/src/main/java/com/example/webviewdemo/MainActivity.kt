@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             <!DOCTYPE html>
             <html>
             <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
                 <style>
                     body { font-family: sans-serif; padding: 20px; text-align: center; }
                     button { padding: 15px; margin: 10px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 8px; width: 100%; box-sizing: border-box; transition: transform 0.1s, opacity 0.1s; }
