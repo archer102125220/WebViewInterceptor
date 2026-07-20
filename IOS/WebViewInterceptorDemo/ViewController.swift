@@ -93,13 +93,28 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
                     .then(res => res.json())
                     .then(() => location.href='https://www.google.com');
             ">11. 真實情境：Fetch API 回傳後同頁跳轉 (location.href，雙平台皆成功)</button>
+            <button onclick="
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(res => res.json())
+                    .then(() => {
+                        const a = document.createElement('a');
+                        a.href = 'https://www.google.com';
+                        a.target = '_self';
+                        a.click();
+                    });
+            ">12. 真實情境：Fetch API 後動態 a tag 同頁跳轉 (_self，雙平台皆成功)</button>
+            <button onclick="
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(res => res.json())
+                    .then(() => window.open('https://www.google.com', '_self'));
+            ">13. 真實情境：Fetch API 後 window.open 同頁跳轉 (_self，雙平台皆成功)</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>🟡 平台限制與差異：只有某一方會成功</h3>
             
             <h4 style="margin-bottom: 5px; color: #d39e00;">僅 Android 成功 (iOS 視為惡意彈窗封殺)</h4>
-            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">12. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)</button>
-            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">13. 延遲 3 秒後 window.open</button>
+            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)">14. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)</button>
+            <button onclick="setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)">15. 延遲 3 秒後 window.open</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
@@ -107,7 +122,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
                         const w = window.open('https://www.google.com', '_blank');
                         if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
                     });
-            ">14. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s 放行)</button>
+            ">16. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s 放行)</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
@@ -117,17 +132,17 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
                         a.target = '_blank';
                         a.click();
                     });
-            ">15. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)</button>
+            ">17. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)</button>
 
             <h4 style="margin-bottom: 5px; color: #d39e00;">僅 iOS 成功 (Android 原生攔截器穿透)</h4>
             <form method="POST" action="https://www.google.com" style="margin: 10px;">
-                <button type="submit" style="background: #dc3545; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">16. 表單 POST 跳轉 (Android 穿透 / iOS 成功攔截)</button>
+                <button type="submit" style="background: #dc3545; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">18. 表單 POST 跳轉 (Android 穿透 / iOS 成功攔截)</button>
             </form>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3 style="color: red;">🔴 雙平台皆失效 (攔截死角與超時封殺)</h3>
-            <button onclick="history.pushState(null, '', '#new-page'); alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！')">17. SPA 路由切換 (history.pushState)</button>
-            <button onclick="setTimeout(() => { const w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">18. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)</button>
+            <button onclick="history.pushState(null, '', '#new-page'); alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！')">19. SPA 路由切換 (history.pushState)</button>
+            <button onclick="setTimeout(() => { const w = window.open('https://www.google.com', '_blank'); if(!w) alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！'); }, 6000)">20. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)</button>
             <button onclick="
                 setTimeout(() => {
                     const a = document.createElement('a');
@@ -135,19 +150,19 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
                     a.target = '_blank';
                     a.click();
                 }, 6000);
-            ">19. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)</button>
+            ">21. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
-            <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">20. 同步觸發 JSBridge 開啟網址</button>
-            <button onclick="Promise.resolve().then(() => callNativeBridgeToOpenUrl('https://www.google.com'))">21. Microtask (Promise) 觸發 JSBridge 開啟網址</button>
-            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 1000)">22. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址</button>
-            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 6000)">23. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)</button>
+            <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">22. 同步觸發 JSBridge 開啟網址</button>
+            <button onclick="Promise.resolve().then(() => callNativeBridgeToOpenUrl('https://www.google.com'))">23. Microtask (Promise) 觸發 JSBridge 開啟網址</button>
+            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 1000)">24. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址</button>
+            <button onclick="setTimeout(() => callNativeBridgeToOpenUrl('https://www.google.com'), 6000)">25. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)</button>
             <button onclick="
                 fetch('https://jsonplaceholder.typicode.com/todos/1')
                     .then(res => res.json())
                     .then(() => callNativeBridgeToOpenUrl('https://www.google.com'));
-            ">24. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址</button>
+            ">26. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址</button>
 
             <hr style="margin-top: 30px; margin-bottom: 20px;">
             <h3>原有的自定義攔截測試</h3>
