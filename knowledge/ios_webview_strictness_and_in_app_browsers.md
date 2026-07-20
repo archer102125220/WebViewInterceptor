@@ -4,15 +4,14 @@
 
 本文件總結了 iOS WebView (主要是 WKWebView) 在不同版本、不同場景下的防禦機制與限制。
 
-## 1. 跨 iOS 版本的防禦一致性 (Token 遺失鐵律)
+## 1. iOS WebKit 對非同步 Token 的嚴格審查
 
-Apple 的 WebKit 引擎對於「**非同步回呼會沒收 User Gesture Token**」這項資安鐵律，已經存在非常多年。
-- 不同於 Android Chromium 引擎擁有的「User Activation v2 (UAv2)」5 秒鐘寬限期，iOS WebKit **沒有**任何秒數的寬限期。
-- 只要使用者的點擊事件進入了非同步 Callback (特別是會讓 Event Loop 重新排程的 Macrotask，如 `setTimeout` 或 `fetch`)，代表實體點擊的憑證就會立刻失效 (0 秒寬限)。
-- 隨後觸發的 `window.open` 就會被 WebKit 引擎底層判定為背景惡意彈窗而封殺。
+相較於 Android Chromium 引擎相對寬容的「User Activation v2 (UAv2)」5 秒鐘寬限期，Apple 的 WebKit 引擎對於「非同步回呼 (Async Callback)」的審查明顯嚴苛許多：
+- **`fetch` 等 Promise 的 0 秒寬限**：只要牽涉到網路請求等非同步 Promise 操作，Token 會被立刻沒收，導致後續的 `window.open` 必定被底層判定為背景惡意彈窗而封殺。
+- **`setTimeout` 的極短寬限**：僅有針對第一層的 `setTimeout` 給予大約 1 秒的極短寬限期，超時或巢狀呼叫同樣會立刻失效。
 
 > [!NOTE]
-> 關於 iOS WebKit 在底層 Event Loop 中對 Macrotask 與 Microtask (Promise) 的歷史演進與處置差異，已統一整理於：[async_popup_blocker_history.md](file:///Users/parkerchen/Desktop/code/WebViewInterceptorDemo/knowledge/async_popup_blocker_history.md) 的第 4 節。
+> 關於 iOS WebKit 在底層 Event Loop 中對 Macrotask (`setTimeout`) 與 Microtask (`Promise`) 更詳細的歷史演進與處置差異，已統一整理於：[async_popup_blocker_history.md](file:///Users/parkerchen/Desktop/code/WebViewInterceptor/knowledge/async_popup_blocker_history.md) 的第 4 節。
 
 ## 2. 真實世界更嚴格的挑戰：第三方 App 內建瀏覽器 (In-App Browser)
 
