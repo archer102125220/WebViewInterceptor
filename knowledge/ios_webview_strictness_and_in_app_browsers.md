@@ -1,6 +1,7 @@
 # iOS WebView 嚴格度解析：從 WebKit 政策到第三方 App (In-App Browser) 限制
 
 [English Version](ios_webview_strictness_and_in_app_browsers_en.md)
+
 在進行跨平台 WebView 彈窗（`window.open` 或動態建立 `<a>` 標籤）測試時，許多前端開發者會發現 iOS 的行為不僅異常嚴格，而且在真實世界中（如放入 LINE、Facebook 等社群軟體開啟）甚至會遇到比原廠預設更惡劣的狀況。
 
 本文件總結了 iOS WebView (主要是 WKWebView) 在不同版本、不同場景下的防禦機制與限制。

@@ -1,6 +1,7 @@
 # Android WebView 碎片化解析：Chromium 核心、第三方內核與無 GMS 設備的影響
 
 [English Version](android_webview_fragmentation_en.md)
+
 Android 平台一直以來以「碎片化 (Fragmentation)」聞名。然而在探討 WebView 的彈窗與「User Activation v2 (UAv2)」機制時，其影響並非單純取決於手機硬體廠牌，而是取決於**底層瀏覽器內核的來源與版本**。
 
 本文件將解析在不同 Android 環境下，前端使用 `window.open`、動態建立 `<a target="_blank">` 標籤，或進行非同步跳轉時可能遭遇的落差與限制。

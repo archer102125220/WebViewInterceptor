@@ -1,6 +1,7 @@
 # 跨平台 WebView 的非同步彈窗防禦機制與 JSBridge 架構
 
 [English Version](async_popup_blocker_history_en.md)
+
 本文件記錄了為何在現代前端框架 (Vue / React) 中，使用非同步打 API 後呼叫 `window.open` 或動態建立 `<a>` 標籤，容易在行動裝置 App 內嵌 WebView 中遭遇攔截失效或被阻擋的根本原因。
 
 ## 1. 問題現象：前端非同步彈窗失敗
