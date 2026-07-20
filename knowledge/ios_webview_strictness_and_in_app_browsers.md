@@ -11,7 +11,7 @@
 - **`setTimeout` 的極短寬限**：僅有針對第一層的 `setTimeout` 給予大約 1 秒的極短寬限期，超時或巢狀呼叫同樣會立刻失效。
 
 > [!NOTE]
-> 關於 iOS WebKit 在底層 Event Loop 中對 Macrotask (`setTimeout`) 與 Microtask (`Promise`) 更詳細的歷史演進與處置差異，已統一整理於：[async_popup_blocker_history.md](file:///Users/parkerchen/Desktop/code/WebViewInterceptor/knowledge/async_popup_blocker_history.md) 的第 4 節。
+> 關於 iOS WebKit 在底層 Event Loop 中對 Macrotask (`setTimeout`) 與 Microtask (`Promise`) 更詳細的歷史演進與處置差異，已統一整理於：[async_popup_blocker_history.md](./async_popup_blocker_history.md) 的第 4 節。
 
 ## 2. 真實世界更嚴格的挑戰：第三方 App 內建瀏覽器 (In-App Browser)
 
