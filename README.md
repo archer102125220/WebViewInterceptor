@@ -14,7 +14,7 @@
 3. **攔截死角 / 失效測試**：
     * **SPA 路由切換 (`history.pushState`)**：雙平台皆攔截失效（無重新載入行為）。
     * **表單 POST 跳轉 (`<form method="POST">`)**：Android 攔截穿透失效（直接跳轉），iOS 成功攔截。
-    * **非同步與延遲彈窗 (`setTimeout` + `window.open`)**：iOS WebKit 因 0 秒寬限期會立刻封殺；Android Chromium 則受惠於 UAv2 機制，在 5 秒的寬限期內通常會放行。
+    * **非同步與延遲彈窗 (`fetch` / `setTimeout` + `window.open`)**：iOS WebKit 對非同步極度嚴格 (特別是 `fetch` 具有 0 秒寬限期，會立刻封殺)；Android Chromium 則受惠於 UAv2 機制，在 5 秒的寬限期內通常會放行。
 
 ---
 
