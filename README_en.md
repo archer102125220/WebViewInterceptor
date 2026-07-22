@@ -5,6 +5,8 @@
 This is a dual-platform (Android / iOS) WebView redirection interception testing and demonstration project.
 The purpose of this project is to deeply test and verify the limits and blind spots of native interceptors in WebViews under various scenarios (such as manual clicks, script redirections, asynchronous tasks, SPA routing).
 
+The establishment of this project stems from the common cognitive gaps during cross-team collaboration. Many WebView behaviors that are basic common sense in the frontend field are often difficult to convince engineers from non-frontend fields simply through verbal explanation. To prevent technical discussions from devolving into subjective impressions like "that's just your imagination," this project provides a concrete experimental benchmark. It uses the most authentic dual-platform running results as the sole basis for technical verification.
+
 ## Project Structure
 * **`Android/`**: Android version, using Kotlin with modern `WebViewClient` (handles in-page redirection) and `WebChromeClient` (handles new windows).
 * **`IOS/`**: iOS version, using Swift with `WKWebView`, `WKNavigationDelegate` (handles in-page redirection), and `WKUIDelegate` (handles new windows).

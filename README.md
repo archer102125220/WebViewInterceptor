@@ -5,6 +5,8 @@
 這是一個雙平台 (Android / iOS) 的 WebView 跳轉攔截測試與展示專案。
 此專案旨在深度測試並驗證 WebView 在面對不同情境（如人為點擊、腳本跳轉、非同步任務、SPA 路由）時，原生端攔截器的極限與死角。
 
+本專案的建立，源於跨團隊協作時常見的認知落差。許多在前端領域屬於基礎常識的 WebView 行為，往往難以單憑口頭解釋讓非前端領域的工程師信服。為避免技術討論淪為「那只是你的想像」這類主觀感受，本專案提供了一套具體的實驗基準 (Benchmark)，以最真實的雙平台運行結果，作為技術驗證的唯一依據。
+
 ## 專案結構
 * **`Android/`**：Android 版本，使用 Kotlin 與現代化 `WebViewClient` (處理當頁跳轉) 和 `WebChromeClient` (處理新視窗)。
 * **`IOS/`**：iOS 版本，使用 Swift 與 `WKWebView`、`WKNavigationDelegate` (處理當頁跳轉)、`WKUIDelegate` (處理新視窗)。
