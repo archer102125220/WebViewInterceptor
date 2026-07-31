@@ -1,8 +1,48 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const PORT = 3000;
+
+// 自動獲取本機的區域網路 IP
+function getLocalIp() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+}
+
+const currentIp = getLocalIp();
+
+// 動態寫入 IP 到 Android 與 iOS 的原始碼中，達成單一來源自動維護
+function injectIpToNativeCode(ip) {
+    console.log(`[Auto-Inject] Detecting local IP: ${ip}`);
+    
+    const androidPath = path.join(__dirname, '../Android/app/src/main/java/com/example/webviewdemo/MainActivity.kt');
+    if (fs.existsSync(androidPath)) {
+        let code = fs.readFileSync(androidPath, 'utf8');
+        code = code.replace(/val SERVER_IP = ".*" \/\/ AUTO-INJECTED-IP/, `val SERVER_IP = "${ip}" // AUTO-INJECTED-IP`);
+        fs.writeFileSync(androidPath, code);
+        console.log(`[Auto-Inject] Successfully updated Android MainActivity.kt`);
+    }
+
+    const iosPath = path.join(__dirname, '../IOS/WebViewInterceptorDemo/ViewController.swift');
+    if (fs.existsSync(iosPath)) {
+        let code = fs.readFileSync(iosPath, 'utf8');
+        code = code.replace(/let SERVER_IP = ".*" \/\/ AUTO-INJECTED-IP/, `let SERVER_IP = "${ip}" // AUTO-INJECTED-IP`);
+        fs.writeFileSync(iosPath, code);
+        console.log(`[Auto-Inject] Successfully updated iOS ViewController.swift`);
+    }
+}
+
+// 啟動伺服器前先自動注入 IP
+injectIpToNativeCode(currentIp);
 
 // 模擬非同步查詢資料庫生成 URL
 const queryDatabaseForUrl = () => {

@@ -15,6 +15,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
+    // 將 IP 提取出來，並標記給 server.js 自動更新
+    private val SERVER_IP = "10.30.3.25" // AUTO-INJECTED-IP
+
     // 【JSBridge 原生通訊實作】
     // 為什麼要用 JSBridge 處理跳轉？
     // 因為這完全避開了 WebView / Chromium 對於 window.open 的嚴格彈窗限制。
@@ -171,6 +174,13 @@ class MainActivity : AppCompatActivity() {
             </head>
             <body>
                 <h2>WebView 跳轉攔截測試</h2>
+                
+                <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; color: #0d6efd;">🚀 進階實驗：302 延遲跳轉</h3>
+                    <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px;">測試直接跳轉到 WebServer 上的 /redirect，並以 _blank 處理</p>
+                    <a href="http://${SERVER_IP}:3000/redirect" target="_blank" style="background-color: #0d6efd;">a tag 測試 (_blank)</a>
+                    <button onclick="window.open('http://${SERVER_IP}:3000/redirect', '_blank')" style="background-color: #198754;">window.open 測試 (_blank)</button>
+                </div>
                 
                 <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>
                 <a href="https://www.google.com">1. a tag 當頁跳轉</a>
