@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>302 Redirect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-case {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        button, a.button-style {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+        button:hover, a.button-style:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>302 Redirect Delay Test</h1>
+    <p>這個頁面用於測試雙平台 WebView 處理帶有延遲的 302 重新導向，並且是另開新分頁 (target="_blank") 的情況。</p>
+
+    <div class="test-case">
+        <h2>Test 1: <code>&lt;a target="_blank"&gt;</code></h2>
+        <p>使用標準 a 標籤配合 <code>target="_blank"</code> 跳轉到 /redirect。</p>
+        <a href="/redirect" target="_blank" class="button-style">Open Link (a tag)</a>
+    </div>
+
+    <div class="test-case">
+        <h2>Test 2: <code>window.open()</code></h2>
+        <p>使用 JavaScript <code>window.open('/redirect', '_blank')</code> 跳轉到 /redirect。</p>
+        <button onclick="window.open('/redirect', '_blank')">Open Link (window.open)</button>
+    </div>
+
+</body>
+</html>
