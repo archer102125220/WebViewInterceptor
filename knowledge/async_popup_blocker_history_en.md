@@ -30,11 +30,12 @@ The purpose of this strict setting is to:
 When the front-end waits via `fetch` or `setTimeout`, the Event Loop is interrupted (it can be imagined as being cut into a thread different from the user operation event for subsequent actions). When the asynchronous task finishes and executes to `window.open`, the "physical click pass (User Gesture Token)" issued by the underlying system has expired or been lost.
 At this time, WebView will determine this is a **"malicious background popup without physical click (user operation) endorsement"**, and ruthlessly block it.
 
-## 3. Solution: Abandon URL Interception, Embrace JSBridge
+## 3. Solution: JSBridge and Server-side 302 Redirect
 
-Facing the strict defense mechanisms mentioned above, purely front-end bypass techniques (like creating hidden `<a>` and triggering `.click()`) are extremely unstable and easily blocked.
+Facing the strict defense mechanisms mentioned above, purely front-end bypass techniques (like creating hidden `<a>` and triggering `.click()`) are extremely unstable and easily blocked. Currently, there are two standard solutions in the industry that guarantee a 100% success rate:
 
-**The industry's ultimate standard solution is to use JSBridge (JavaScript Bridge):**
+### Solution 1: Abandon URL Interception, Embrace JSBridge (Most Common)
+
 Do not go through the browser's `window.open` engine, but let the front-end "directly command" the native App to open the screen.
 
 ### Front-End Implementation Method:
@@ -71,6 +72,21 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 - **100% Success Rate**: This is equivalent to "front-end calling a Function of the native App", completely bypassing WebView's malicious popup blocking mechanism.
 - **Ignores Asynchronous Delay**: No matter how long the API request takes, as long as JSBridge is called, the native end will definitely execute it, without the problem of gesture credential expiration.
 - **Clear Responsibilities**: The front-end focuses on handling business logic (getting the URL), and matters requiring control over the screen like opening a window are handed back to the native App.
+
+### Solution 2: Server-side 302 Redirect
+
+If architectural constraints prevent the use of JSBridge, another perfect solution is to **shift the asynchronous waiting process to the server side**.
+
+Instead of having the front-end call `fetch` and wait for the result before executing `window.open` (which causes Token loss), it is better to **directly** execute `window.open('https://api.yourdomain.com/get-url-and-redirect', '_blank')` synchronously at the moment the user clicks.
+
+- After receiving the request, the server performs asynchronous database queries or logical operations on the backend.
+- Once the operation is complete, the server directly returns an `HTTP 302 Found` status code and includes the target URL in the `Location` Header.
+- Browsers natively support 302 redirects and will automatically follow and navigate to that URL.
+
+**Advantages of Server-side 302 Redirects**:
+- **Perfectly Bypasses Async Restrictions**: Because the front-end triggers `window.open` "synchronously", the physical click pass (User Gesture Token) is not lost at all. The subsequent asynchronous waiting occurs at the network connection level, which will not trigger WebView's security interception.
+- **Pure Web Technology**: It does not rely on Native Apps to develop JSBridge, making it suitable for scenarios where App-side code cannot be modified.
+- *(Note: The mock-server in this project has implemented a demo of this mechanism, and the test results confirm that both platforms can successfully allow it!)*
 
 
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
