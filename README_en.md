@@ -73,8 +73,8 @@ To practically test the 4th scenario mentioned above, a lightweight Node.js serv
 1. Ensure [Node.js](https://nodejs.org/) is installed on your computer.
 2. Open a terminal and enter the project's `mock-server/` folder.
 3. Run `node server.js` to start the server.
-4. **Auto-Injection**: When the server starts, it will automatically detect your current local area network IP and dynamically inject it into the test buttons of both Android (`MainActivity.kt`) and iOS (`ViewController.swift`).
-5. Keep the server running, recompile, and launch the Android or iOS App. You will see a dedicated **302 Delay Test section** at the top of the home page; click to test the effect.
+4. **Auto-Configuration**: When the server starts, it will automatically detect your current local area network IP and write it into the configuration files for Android (`env.properties`) and iOS (`ServerConfig.swift`).
+5. Keep the server running, recompile, and launch the Android or iOS App. The App will automatically read this IP, and you will see a dedicated **302 Delay Test section** at the top of the home page; click to test the effect.
 
 ---
 
