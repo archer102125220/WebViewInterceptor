@@ -20,29 +20,28 @@ function getLocalIp() {
 
 const currentIp = getLocalIp();
 
-// 動態寫入 IP 到 Android 與 iOS 的原始碼中，達成單一來源自動維護
-function injectIpToNativeCode(ip) {
-    console.log(`[Auto-Inject] Detecting local IP: ${ip}`);
-    
-    const androidPath = path.join(__dirname, '../Android/app/src/main/java/com/example/webviewdemo/MainActivity.kt');
-    if (fs.existsSync(androidPath)) {
-        let code = fs.readFileSync(androidPath, 'utf8');
-        code = code.replace(/val SERVER_IP = ".*" \/\/ AUTO-INJECTED-IP/, `val SERVER_IP = "${ip}" // AUTO-INJECTED-IP`);
-        fs.writeFileSync(androidPath, code);
-        console.log(`[Auto-Inject] Successfully updated Android MainActivity.kt`);
-    }
+// 動態寫入 IP 到 env.properties (Android 使用) 與 ServerConfig.swift (iOS 使用)
+function writeIpToEnvFiles(ip) {
+    // 1. Android 使用 env.properties (在 build.gradle 讀取)
+    const envPath = path.join(__dirname, 'env.properties');
+    const envData = `SERVER_IP=${ip}\n`;
+    fs.writeFileSync(envPath, envData, 'utf8');
+    console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to mock-server/env.properties`);
 
-    const iosPath = path.join(__dirname, '../IOS/WebViewInterceptorDemo/ViewController.swift');
-    if (fs.existsSync(iosPath)) {
-        let code = fs.readFileSync(iosPath, 'utf8');
-        code = code.replace(/let SERVER_IP = ".*" \/\/ AUTO-INJECTED-IP/, `let SERVER_IP = "${ip}" // AUTO-INJECTED-IP`);
-        fs.writeFileSync(iosPath, code);
-        console.log(`[Auto-Inject] Successfully updated iOS ViewController.swift`);
-    }
+    // 2. iOS 使用 ServerConfig.swift
+    const iosConfigPath = path.join(__dirname, '../IOS/WebViewInterceptorDemo/ServerConfig.swift');
+    const iosConfigData = `// 自動生成的 IP 設定檔 (由 mock-server 產生)
+// 由於此檔案已經加入 .gitignore，因此不會產生 git 異動紀錄
+import Foundation
+
+let SERVER_IP = "${ip}"
+`;
+    fs.writeFileSync(iosConfigPath, iosConfigData, 'utf8');
+    console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to IOS/WebViewInterceptorDemo/ServerConfig.swift`);
 }
 
-// 啟動伺服器前先自動注入 IP
-injectIpToNativeCode(currentIp);
+// 啟動伺服器前先寫入 env.properties 與 ServerConfig.swift
+writeIpToEnvFiles(currentIp);
 
 // 模擬非同步查詢資料庫生成 URL
 const queryDatabaseForUrl = () => {

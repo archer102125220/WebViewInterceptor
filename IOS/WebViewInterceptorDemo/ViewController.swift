@@ -5,8 +5,7 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
 
     var webView: WKWebView!
     
-    // 將 IP 提取出來，並標記給 server.js 自動更新
-    private let SERVER_IP = "10.235.35.139" // AUTO-INJECTED-IP
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()

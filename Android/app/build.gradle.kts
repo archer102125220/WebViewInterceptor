@@ -3,9 +3,23 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
 android {
     namespace = "com.example.webviewdemo"
     compileSdk = 34
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    val envProperties = Properties()
+    val envPropertiesFile = rootProject.file("../mock-server/env.properties")
+    if (envPropertiesFile.exists()) {
+        envProperties.load(FileInputStream(envPropertiesFile))
+    }
+    val mockServerIp = envProperties.getProperty("SERVER_IP", "127.0.0.1")
 
     defaultConfig {
         applicationId = "com.example.webviewdemo"
@@ -13,6 +27,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        
+        buildConfigField("String", "SERVER_IP", "\"$mockServerIp\"")
     }
 
     buildTypes {

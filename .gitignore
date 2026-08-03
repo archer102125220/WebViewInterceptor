@@ -30,3 +30,7 @@ DerivedData/
 # We usually keep project.xcworkspace but ignore user specific workspace data
 IOS/WebViewInterceptorDemo.xcodeproj/project.xcworkspace/xcuserdata/
 IOS/WebViewInterceptorDemo.xcodeproj/xcuserdata/
+
+# Mock Server Config
+env.properties
+IOS/WebViewInterceptorDemo/ServerConfig.swift

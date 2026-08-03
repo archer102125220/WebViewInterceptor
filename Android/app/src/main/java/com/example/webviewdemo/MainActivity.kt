@@ -14,9 +14,8 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
-
-    // 將 IP 提取出來，並標記給 server.js 自動更新
-    private val SERVER_IP = "10.235.35.139" // AUTO-INJECTED-IP
+    private val TAG = "WebViewDemo"
+    private val SERVER_IP = BuildConfig.SERVER_IP
 
     // 【JSBridge 原生通訊實作】
     // 為什麼要用 JSBridge 處理跳轉？
