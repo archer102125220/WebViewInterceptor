@@ -19,6 +19,9 @@ The establishment of this project stems from the common cognitive gaps during cr
     * **SPA Routing Switch (`history.pushState`)**: Interception fails on both platforms (no reload behavior).
     * **Form POST Redirection (`<form method="POST">`)**: Android interception fails (direct redirection), iOS successfully intercepts.
     * **Asynchronous and Delayed Popups (`fetch` / `setTimeout` + `window.open`)**: iOS WebKit is extremely strict on async (especially `fetch` which has a 0-second grace period and is blocked immediately); Android Chromium benefits from the UAv2 mechanism and typically allows it within a 5-second grace period.
+4. **Server-side Delayed 302 Redirect**:
+    * Tests opening a new window (`_blank`) directly using an `a tag` or `window.open`, pointing to an API that intentionally delays for 2 seconds on the server side (simulating an async database query) before returning an HTTP 302 redirect.
+    * **Result**: Works perfectly on both platforms! This proves that as long as the asynchronous waiting process is shifted to the server side, it can perfectly bypass the strict popup security restrictions imposed by WebViews on JS async callbacks.
 
 ---
 
@@ -60,6 +63,18 @@ The establishment of this project stems from the common cognitive gaps during cr
      ./gradlew installDebug
      ```
    * After completion, find and open the `WebViewInterceptorDemo` App on the phone or simulator.
+
+---
+
+### 🚀 Advanced Experiment: Local WebServer 302 Delayed Redirect Test
+
+To practically test the 4th scenario mentioned above, a lightweight Node.js server is built into this project.
+
+1. Ensure [Node.js](https://nodejs.org/) is installed on your computer.
+2. Open a terminal and enter the project's `mock-server/` folder.
+3. Run `node server.js` to start the server.
+4. **Auto-Injection**: When the server starts, it will automatically detect your current local area network IP and dynamically inject it into the test buttons of both Android (`MainActivity.kt`) and iOS (`ViewController.swift`).
+5. Keep the server running, recompile, and launch the Android or iOS App. You will see a dedicated **302 Delay Test section** at the top of the home page; click to test the effect.
 
 ---
 

@@ -19,6 +19,9 @@
     * **SPA 路由切換 (`history.pushState`)**：雙平台皆攔截失效（無重新載入行為）。
     * **表單 POST 跳轉 (`<form method="POST">`)**：Android 攔截穿透失效（直接跳轉），iOS 成功攔截。
     * **非同步與延遲彈窗 (`fetch` / `setTimeout` + `window.open`)**：iOS WebKit 對非同步極度嚴格 (特別是 `fetch` 具有 0 秒寬限期，會立刻封殺)；Android Chromium 則受惠於 UAv2 機制，在 5 秒的寬限期內通常會放行。
+4. **伺服器端延遲跳轉 (Server-side Delayed 302 Redirect)**：
+    * 測試直接使用 `a tag` 或 `window.open` 開啟新視窗 (`_blank`)，並指向一個在伺服器端故意延遲 2 秒（模擬非同步資料庫查詢）才回傳 HTTP 302 的 API。
+    * **結果**：雙平台皆能正常運作並成功跳轉！這證實了只要將非同步等待的過程轉移至伺服器端，就能完美繞過 WebView 對 JS 非同步回呼 (async callback) 嚴格的彈窗安全封殺限制。
 
 ---
 
@@ -60,6 +63,18 @@
      ./gradlew installDebug
      ```
    * 執行完畢後，在手機或模擬器上尋找並點開 `WebViewInterceptorDemo` App 即可。
+
+---
+
+### 🚀 進階實驗：WebServer 302 延遲跳轉測試
+
+為了實測上述的第 4 種情境，本專案內建了一個輕量級的 Node.js 伺服器。
+
+1. 確認您的電腦已安裝 [Node.js](https://nodejs.org/)。
+2. 打開終端機，進入專案的 `mock-server/` 資料夾。
+3. 執行 `node server.js` 啟動伺服器。
+4. **自動化注入**：伺服器啟動時會自動偵測您當前的區域網路 IP，並動態將 IP 注入到 Android (`MainActivity.kt`) 與 iOS (`ViewController.swift`) 的測試按鈕中。
+5. 保持伺服器運行，重新編譯並啟動 Android 或 iOS App，您會在首頁最上方看到專屬的 **302 延遲測試區塊**，點擊即可實測效果。
 
 ---
 
