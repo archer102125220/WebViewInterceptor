@@ -147,6 +147,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val isServerDisabled = SERVER_IP.isEmpty()
+        val btnSuffix = if (isServerDisabled) " (未啟動)" else ""
+        val aTagStyle = if (isServerDisabled) "background-color: #6c757d; pointer-events: none; opacity: 0.5;" else "background-color: #0d6efd;"
+        val btnStyle = if (isServerDisabled) "background-color: #6c757d; opacity: 0.5;" else "background-color: #198754;"
+        val btnDisabledAttr = if (isServerDisabled) "disabled" else ""
+
         // 載入一個測試用的 HTML，涵蓋各種跳轉情境
         val htmlContent = """
             <!DOCTYPE html>
@@ -177,8 +183,8 @@ class MainActivity : AppCompatActivity() {
                 <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
                     <h3 style="margin-top: 0; color: #0d6efd;">🚀 進階實驗：302 延遲跳轉</h3>
                     <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px;">測試直接跳轉到 WebServer 上的 /redirect，並以 _blank 處理</p>
-                    <a href="http://${SERVER_IP}:3000/redirect" target="_blank" style="background-color: #0d6efd;">a tag 測試 (_blank)</a>
-                    <button onclick="window.open('http://${SERVER_IP}:3000/redirect', '_blank')" style="background-color: #198754;">window.open 測試 (_blank)</button>
+                    <a href="http://${SERVER_IP}:3000/redirect" target="_blank" style="$aTagStyle">a tag 測試 (_blank)$btnSuffix</a>
+                    <button onclick="window.open('http://${SERVER_IP}:3000/redirect', '_blank')" style="$btnStyle" $btnDisabledAttr>window.open 測試 (_blank)$btnSuffix</button>
                 </div>
                 
                 <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>

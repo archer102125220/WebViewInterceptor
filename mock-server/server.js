@@ -20,28 +20,16 @@ function getLocalIp() {
 
 const currentIp = getLocalIp();
 
-// 動態寫入 IP 到 env.properties (Android 使用) 與 ServerConfig.swift (iOS 使用)
-function writeIpToEnvFiles(ip) {
-    // 1. Android 使用 env.properties (在 build.gradle 讀取)
+// 動態寫入 IP 到 env.properties，讓原生雙平台讀取
+function writeIpToEnvFile(ip) {
     const envPath = path.join(__dirname, 'env.properties');
     const envData = `SERVER_IP=${ip}\n`;
     fs.writeFileSync(envPath, envData, 'utf8');
     console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to mock-server/env.properties`);
-
-    // 2. iOS 使用 ServerConfig.swift
-    const iosConfigPath = path.join(__dirname, '../IOS/WebViewInterceptorDemo/ServerConfig.swift');
-    const iosConfigData = `// 自動生成的 IP 設定檔 (由 mock-server 產生)
-// 由於此檔案已經加入 .gitignore，因此不會產生 git 異動紀錄
-import Foundation
-
-let SERVER_IP = "${ip}"
-`;
-    fs.writeFileSync(iosConfigPath, iosConfigData, 'utf8');
-    console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to IOS/WebViewInterceptorDemo/ServerConfig.swift`);
 }
 
-// 啟動伺服器前先寫入 env.properties 與 ServerConfig.swift
-writeIpToEnvFiles(currentIp);
+// 啟動伺服器前先寫入 env.properties
+writeIpToEnvFile(currentIp);
 
 // 模擬非同步查詢資料庫生成 URL
 const queryDatabaseForUrl = () => {

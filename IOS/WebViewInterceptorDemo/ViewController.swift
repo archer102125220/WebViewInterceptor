@@ -5,7 +5,10 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
 
     var webView: WKWebView!
     
-    
+    // 動態從 Info.plist 讀取 IP，若找不到則使用預設值 127.0.0.1
+    private var SERVER_IP: String {
+        return Bundle.main.object(forInfoDictionaryKey: "MockServerIP") as? String ?? "127.0.0.1"
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +38,12 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
         webView.navigationDelegate = self
         webView.uiDelegate = self
         self.view.addSubview(webView)
+
+        let isServerDisabled = SERVER_IP.isEmpty || SERVER_IP == "127.0.0.1"
+        let btnSuffix = isServerDisabled ? " (未配置 WebServer)" : ""
+        let aTagStyle = isServerDisabled ? "background-color: #6c757d; pointer-events: none; opacity: 0.5;" : "background-color: #0d6efd;"
+        let btnStyle = isServerDisabled ? "background-color: #6c757d; opacity: 0.5;" : "background-color: #198754;"
+        let btnDisabledAttr = isServerDisabled ? "disabled" : ""
 
         // 3. 準備與 Android 一模一樣的 HTML
         let htmlContent = """
@@ -66,8 +75,8 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
             <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
                 <h3 style="margin-top: 0; color: #0d6efd;">🚀 進階實驗：302 延遲跳轉</h3>
                 <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px;">測試直接跳轉到 WebServer 上的 /redirect，並以 _blank 處理</p>
-                <a href="http://\(SERVER_IP):3000/redirect" target="_blank" style="background-color: #0d6efd;">a tag 測試 (_blank)</a>
-                <button onclick="window.open('http://\(SERVER_IP):3000/redirect', '_blank')" style="background-color: #198754;">window.open 測試 (_blank)</button>
+                <a href="http://\(SERVER_IP):3000/redirect" target="_blank" style="\(aTagStyle)">a tag 測試 (_blank)\(btnSuffix)</a>
+                <button onclick="window.open('http://\(SERVER_IP):3000/redirect', '_blank')" style="\(btnStyle)" \(btnDisabledAttr)>window.open 測試 (_blank)\(btnSuffix)</button>
             </div>
             
             <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>

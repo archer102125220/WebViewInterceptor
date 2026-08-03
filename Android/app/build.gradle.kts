@@ -19,7 +19,7 @@ android {
     if (envPropertiesFile.exists()) {
         envProperties.load(FileInputStream(envPropertiesFile))
     }
-    val mockServerIp = envProperties.getProperty("SERVER_IP", "127.0.0.1")
+    val mockServerIp = envProperties.getProperty("SERVER_IP", "")
 
     defaultConfig {
         applicationId = "com.example.webviewdemo"
