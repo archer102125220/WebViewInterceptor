@@ -19,17 +19,37 @@ function getLocalIp() {
 }
 
 const currentIp = getLocalIp();
+const { exec } = require('child_process');
 
-// 動態寫入 IP 到 env.properties，讓原生雙平台讀取
-function writeIpToEnvFile(ip) {
+// 動態寫入 IP 到 env.properties (Android 使用) 與 ServerConfig.swift (iOS 使用)
+function writeIpToEnvFiles(ip) {
+    // 1. Android 使用 env.properties (在 build.gradle 讀取)
     const envPath = path.join(__dirname, 'env.properties');
     const envData = `SERVER_IP=${ip}\n`;
     fs.writeFileSync(envPath, envData, 'utf8');
     console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to mock-server/env.properties`);
+
+    // 2. iOS 使用 ServerConfig.swift
+    const iosConfigPath = path.join(__dirname, '../IOS/WebViewInterceptorDemo/ServerConfig.swift');
+    const iosConfigData = `// 自動生成的 IP 設定檔 (由 mock-server 產生)
+// 由於此檔案已經被標記為 assume-unchanged，因此不會產生 git 異動紀錄
+import Foundation
+
+let SERVER_IP = "${ip}"
+`;
+    fs.writeFileSync(iosConfigPath, iosConfigData, 'utf8');
+    console.log(`[Auto-Inject] Successfully wrote local IP (${ip}) to IOS/WebViewInterceptorDemo/ServerConfig.swift`);
+
+    // 自動執行 git 命令，讓此檔案的修改被 Git 忽略
+    exec('git update-index --assume-unchanged IOS/WebViewInterceptorDemo/ServerConfig.swift', (err) => {
+        if (!err) {
+            console.log(`[Auto-Inject] Successfully applied git assume-unchanged to ServerConfig.swift`);
+        }
+    });
 }
 
-// 啟動伺服器前先寫入 env.properties
-writeIpToEnvFile(currentIp);
+// 啟動伺服器前先寫入 env.properties 與 ServerConfig.swift
+writeIpToEnvFiles(currentIp);
 
 // 模擬非同步查詢資料庫生成 URL
 const queryDatabaseForUrl = () => {

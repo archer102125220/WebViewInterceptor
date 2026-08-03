@@ -2,13 +2,7 @@ import UIKit
 import WebKit
 
 class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
-
     var webView: WKWebView!
-    
-    // 動態從 Info.plist 讀取 IP，若找不到則使用預設值 127.0.0.1
-    private var SERVER_IP: String {
-        return Bundle.main.object(forInfoDictionaryKey: "MockServerIP") as? String ?? "127.0.0.1"
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
