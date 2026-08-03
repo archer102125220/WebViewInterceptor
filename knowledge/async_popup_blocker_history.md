@@ -88,6 +88,7 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 - **純 Web 技術**：不需依賴 Native App 開發 JSBridge，適合無法更改 App 端程式碼的情境。
 - *(註：本專案的 mock-server 已實作此機制的 Demo，測試結果證實雙平台皆可順利放行！)*
 
+*(補充：此方法會讓原生端攔截到的網址為中繼 API 網址,而非最終目的地網址,若原生端有依賴網址內容進行路由判斷的邏輯,需額外留意此差異)*
 
 ## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 

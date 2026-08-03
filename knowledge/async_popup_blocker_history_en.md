@@ -88,6 +88,7 @@ Instead of having the front-end call `fetch` and wait for the result before exec
 - **Pure Web Technology**: It does not rely on Native Apps to develop JSBridge, making it suitable for scenarios where App-side code cannot be modified.
 - *(Note: The mock-server in this project has implemented a demo of this mechanism, and the test results confirm that both platforms can successfully allow it!)*
 
+*(Additional Note: This method will cause the URL intercepted by the native end to be the intermediate API URL, rather than the final destination URL. If the native end has routing logic that relies on the URL content, you need to pay extra attention to this difference.)*
 
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
