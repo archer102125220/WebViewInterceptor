@@ -154,9 +154,9 @@ iOS WebKit 的防禦機制與 Android (Chromium) 存在顯著差異，其歷史�
 - 📖 [WebKit Bug 313797 / Commit ebeb545：Propagate user gestures through sendMessage (展示 WebKit 至今仍在解決跨 IPC 與擴充功能非同步邊界的手勢遺失問題)](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
 - 📖 [StackOverflow：Safari `window.open` async workaround (業界針對 Safari 非同步彈窗的標準實務解法，但注意其在 Native WebView 環境下會有嚴重副作用)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
 - 📖 [WHATWG HTML Standard：form.submit() (明確說明 submit() 不受使用者啟動限制)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
+- 📖 [WHATWG HTML Standard：Form Submission Algorithm (規範底層表單送出的標準流程，明確指出 submit() 繞過事件與啟動檢查)](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission-algorithm)
 - 📖 [Android 官方文件：WebViewClient.shouldOverrideUrlLoading (標註不攔截 POST 請求)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 - 📖 [WebKit Bugzilla #140188：WKNavigationAction.request.HTTPBody is nil (iOS 攔截 POST 遺失 Body 的歷史懸案)](https://bugs.webkit.org/show_bug.cgi?id=140188)
-
 ---
 
 > [!TIP]

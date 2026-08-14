@@ -154,9 +154,9 @@ Therefore, because the life cycle determination mechanisms of the dual-platform 
 - 📖 [WebKit Bug 313797 / Commit ebeb545: Propagate user gestures through sendMessage](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
 - 📖 [StackOverflow: Safari `window.open` async workaround (Standard industry workaround for Safari async popups, but note its severe side effects in Native WebView environments)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
 - 📖 [WHATWG HTML Standard: form.submit() (Explicitly states that submit() is exempt from user activation requirements)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
+- 📖 [WHATWG HTML Standard: Form Submission Algorithm (Specifies the underlying standard process for form submission, explicitly stating that submit() bypasses events and activation checks)](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission-algorithm)
 - 📖 [Android Official Documentation: WebViewClient.shouldOverrideUrlLoading (Notes that it does not intercept POST requests)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 - 📖 [WebKit Bugzilla #140188: WKNavigationAction.request.HTTPBody is nil (The historic issue of lost POST body during iOS interception)](https://bugs.webkit.org/show_bug.cgi?id=140188)
-
 ---
 
 > [!TIP]
