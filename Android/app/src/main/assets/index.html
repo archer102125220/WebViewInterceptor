@@ -95,7 +95,7 @@
     <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>
     <a href="https://www.google.com">1. a tag 當頁跳轉</a>
     <a href="https://www.google.com" target="_blank">
-      2. a tag 另開分頁 (target="_blank")
+      1. a tag 另開分頁 (target="_blank")
     </a>
     <button
       onclick="
@@ -105,18 +105,18 @@
         a.click();
       "
     >
-      3. 同步動態建立 a tag 並 click (繞過 window.open)
+      2. 同步動態建立 a tag 並 click (繞過 window.open)
     </button>
 
     <h3>🟢 雙平台皆成功：JS 同步跳轉</h3>
     <button onclick="location.href = 'https://www.google.com'">
-      4. location.href 當頁跳轉
+      3. location.href 當頁跳轉
     </button>
     <button onclick="window.open('https://www.google.com', '_self')">
-      5. window.open 當頁 (_self)
+      4. window.open 當頁 (_self)
     </button>
     <button onclick="window.open('https://www.google.com', '_blank')">
-      6. window.open 另開分頁 (_blank)
+      5. window.open 另開分頁 (_blank)
     </button>
 
     <h3>🟢 雙平台皆成功：非同步與 Event Loop (無視窗開啟限制)</h3>
@@ -125,14 +125,14 @@
         Promise.resolve().then(() => (location.href = 'https://www.google.com'))
       "
     >
-      7. Microtask (Promise) -> location.href
+      6. Microtask (Promise) -> location.href
     </button>
     <button
       onclick="
         setTimeout(() => (location.href = 'https://www.google.com'), 1000)
       "
     >
-      8. Macrotask (setTimeout) -> location.href
+      7. Macrotask (setTimeout) -> location.href
     </button>
     <button
       onclick="
@@ -144,7 +144,7 @@
         })
       "
     >
-      9. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)
+      8. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)
     </button>
     <button
       onclick="
@@ -153,7 +153,7 @@
         )
       "
     >
-      10. Microtask (Promise) -> window.open (同 Tick 傳遞，雙平台成功)
+      9. Microtask (Promise) -> window.open (同 Tick 傳遞，雙平台成功)
     </button>
     <button
       onclick="
@@ -162,7 +162,7 @@
           .then(() => (location.href = 'https://www.google.com'))
       "
     >
-      11. 真實情境：Fetch API 回傳後同頁跳轉 (location.href，雙平台皆成功)
+      10. 真實情境：Fetch API 回傳後同頁跳轉 (location.href，雙平台皆成功)
     </button>
     <button
       onclick="
@@ -176,7 +176,7 @@
           })
       "
     >
-      12. 真實情境：Fetch API 後動態 a tag 同頁跳轉 (_self，雙平台皆成功)
+      11. 真實情境：Fetch API 後動態 a tag 同頁跳轉 (_self，雙平台皆成功)
     </button>
     <button
       onclick="
@@ -185,8 +185,128 @@
           .then(() => window.open('https://www.google.com', '_self'))
       "
     >
-      13. 真實情境：Fetch API 後 window.open 同頁跳轉 (_self，雙平台皆成功)
+      12. 真實情境：Fetch API 後 window.open 同頁跳轉 (_self，雙平台皆成功)
     </button>
+
+    <hr style="border: 1px dashed #ccc; margin: 20px 0" />
+    <h4 style="margin-bottom: 5px; color: #28a745; margin-top: 25px">
+      Form GET 繞過測試 (預期雙平台皆能跳轉且成功攔截)
+    </h4>
+    <form
+      id="staticFormGet"
+      method="GET"
+      action="https://www.google.com"
+      style="margin: 10px"
+    >
+      <button
+        type="submit"
+        style="
+          background: #28a745;
+          width: 100%;
+          padding: 15px;
+          font-size: 16px;
+          color: white;
+          border: none;
+          border-radius: 8px;
+        "
+      >
+        13. HTML 靜態表單 GET 跳轉
+      </button>
+    </form>
+    <button
+      onclick="document.getElementById('staticFormGet').submit()"
+      style="background: #28a745"
+    >
+      14. JS 觸發「靜態表單」 GET (同步)
+    </button>
+    <button
+      onclick="
+        Promise.resolve().then(() =>
+          document.getElementById('staticFormGet').submit(),
+        )
+      "
+      style="background: #28a745"
+    >
+      15. JS 觸發「靜態表單」 GET (Microtask)
+    </button>
+    <button
+      onclick="
+        setTimeout(() => document.getElementById('staticFormGet').submit(), 1000)
+      "
+      style="background: #28a745"
+    >
+      16. JS 觸發「靜態表單」 GET (Macrotask 1s)
+    </button>
+    <button
+      onclick="
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+          .then(res => res.json())
+          .then(() => document.getElementById('staticFormGet').submit())
+      "
+      style="background: #28a745"
+    >
+      17. 真實情境：Fetch API 後觸發「靜態表單」 GET
+    </button>
+
+    <hr style="border: 1px dashed #ccc; margin: 20px 0" />
+
+    <button
+      onclick="
+        const f = document.createElement('form');
+        f.method = 'GET';
+        f.action = 'https://www.google.com';
+        document.body.appendChild(f);
+        f.submit();
+      "
+      style="background: #198754"
+    >
+      18. JS 完全動態建立表單 GET (同步)
+    </button>
+    <button
+      onclick="
+        Promise.resolve().then(() => {
+          const f = document.createElement('form');
+          f.method = 'GET';
+          f.action = 'https://www.google.com';
+          document.body.appendChild(f);
+          f.submit();
+        })
+      "
+      style="background: #198754"
+    >
+      19. JS 完全動態建立表單 GET (Microtask)
+    </button>
+    <button
+      onclick="
+        setTimeout(() => {
+          const f = document.createElement('form');
+          f.method = 'GET';
+          f.action = 'https://www.google.com';
+          document.body.appendChild(f);
+          f.submit();
+        }, 1000)
+      "
+      style="background: #198754"
+    >
+      20. JS 完全動態建立表單 GET (Macrotask 1s)
+    </button>
+    <button
+      onclick="
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+          .then(res => res.json())
+          .then(() => {
+            const f = document.createElement('form');
+            f.method = 'GET';
+            f.action = 'https://www.google.com';
+            document.body.appendChild(f);
+            f.submit();
+          })
+      "
+      style="background: #198754"
+    >
+      21. 真實情境：Fetch API 後觸發「完全動態建立表單」 GET
+    </button>
+
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>🟡 平台限制與差異：只有某一方能成功攔截或放行</h3>
@@ -199,14 +319,14 @@
         setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)
       "
     >
-      14. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)
+      22. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)
     </button>
     <button
       onclick="
         setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)
       "
     >
-      15. 延遲 3 秒後 window.open
+      23. 延遲 3 秒後 window.open
     </button>
     <button
       onclick="
@@ -219,7 +339,7 @@
           })
       "
     >
-      16. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s
+      24. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s
       放行)
     </button>
     <button
@@ -234,7 +354,7 @@
           })
       "
     >
-      17. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)
+      25. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)
     </button>
 
     <h4 style="margin-bottom: 5px; color: #d39e00; margin-top: 25px">
@@ -270,14 +390,14 @@
           border-radius: 8px;
         "
       >
-        18. HTML 靜態表單 POST 跳轉
+        26. HTML 靜態表單 POST 跳轉
       </button>
     </form>
     <button
       onclick="document.getElementById('staticForm').submit()"
       style="background: #dc3545"
     >
-      19. JS 觸發「靜態表單」 POST (同步)
+      27. JS 觸發「靜態表單」 POST (同步)
     </button>
     <button
       onclick="
@@ -287,7 +407,7 @@
       "
       style="background: #dc3545"
     >
-      20. JS 觸發「靜態表單」 POST (Microtask)
+      28. JS 觸發「靜態表單」 POST (Microtask)
     </button>
     <button
       onclick="
@@ -295,7 +415,7 @@
       "
       style="background: #dc3545"
     >
-      21. JS 觸發「靜態表單」 POST (Macrotask 1s)
+      29. JS 觸發「靜態表單」 POST (Macrotask 1s)
     </button>
     <button
       onclick="
@@ -305,7 +425,7 @@
       "
       style="background: #dc3545"
     >
-      22. 真實情境：Fetch API 後觸發「靜態表單」 POST
+      30. 真實情境：Fetch API 後觸發「靜態表單」 POST
     </button>
 
     <hr style="border: 1px dashed #ccc; margin: 20px 0" />
@@ -320,7 +440,7 @@
       "
       style="background: #e02b2b"
     >
-      23. JS 完全動態建立表單 POST (同步)
+      31. JS 完全動態建立表單 POST (同步)
     </button>
     <button
       onclick="
@@ -334,7 +454,7 @@
       "
       style="background: #e02b2b"
     >
-      24. JS 完全動態建立表單 POST (Microtask)
+      32. JS 完全動態建立表單 POST (Microtask)
     </button>
     <button
       onclick="
@@ -348,7 +468,7 @@
       "
       style="background: #e02b2b"
     >
-      25. JS 完全動態建立表單 POST (Macrotask 1s)
+      33. JS 完全動態建立表單 POST (Macrotask 1s)
     </button>
     <button
       onclick="
@@ -364,7 +484,7 @@
       "
       style="background: #e02b2b"
     >
-      26. 真實情境：Fetch API 後觸發「完全動態建立表單」 POST
+      34. 真實情境：Fetch API 後觸發「完全動態建立表單」 POST
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
@@ -375,7 +495,7 @@
         alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！');
       "
     >
-      27. SPA 路由切換 (history.pushState)
+      35. SPA 路由切換 (history.pushState)
     </button>
     <button
       onclick="
@@ -386,7 +506,7 @@
         }, 6000)
       "
     >
-      28. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)
+      36. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)
     </button>
     <button
       onclick="
@@ -398,13 +518,13 @@
         }, 6000)
       "
     >
-      29. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)
+      37. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
     <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">
-      30. 同步觸發 JSBridge 開啟網址
+      38. 同步觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -413,7 +533,7 @@
         )
       "
     >
-      31. Microtask (Promise) 觸發 JSBridge 開啟網址
+      39. Microtask (Promise) 觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -423,7 +543,7 @@
         )
       "
     >
-      32. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址
+      40. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -433,7 +553,7 @@
         )
       "
     >
-      33. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)
+      41. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)
     </button>
     <button
       onclick="
@@ -442,7 +562,7 @@
           .then(() => callNativeBridgeToOpenUrl('https://www.google.com'))
       "
     >
-      34. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址
+      42. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址
     </button>
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>原有的自定義攔截測試</h3>
