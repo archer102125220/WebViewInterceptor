@@ -17,9 +17,9 @@ The establishment of this project stems from the common cognitive gaps during cr
 2. **Asynchronous Script Triggered (Event Loop Testing)**: Redirections triggered via `Promise.resolve().then` (Microtask) and `setTimeout` (Macrotask).
 3. **Interception Blind Spots / Failure Testing**:
     * **SPA Routing Switch (`history.pushState`)**: Interception fails on both platforms (no reload behavior).
-    * **Form Redirection (`<form>`)**: Tests reveal that executing `submit()` on both existing and dynamically created forms perfectly bypasses all asynchronous blocking restrictions, including extreme timeouts.
-      * **GET**: Both platforms successfully redirect and natively intercept the parameters. It stands as **the perfect pure-web workaround**.
-      * **POST**: Android inherently fails to intercept POST requests (penetrates directly), while iOS intercepts them but loses the HTTP Body (always `nil`) due to IPC limitations.
+    * **Form Redirection (`<form>`)**:
+      * **Top-level Navigation (`target="_self"`)**: Behaves like a standard `location.href` navigation and is not affected by popup blockers. However, note that **POST requests** suffer from native flaws on both platforms (Android inherently fails to intercept POST requests and penetrates directly, while iOS intercepts them but the HTTP Body is always `nil` due to IPC limitations).
+      * **Opening a New Window (`target="_blank"`)**: Its behavior equates to `window.open`, making it **fully subjected to the browser's Popup Blocker**, unable to bypass asynchronous or timeout blocks.
     * **Asynchronous and Delayed Popups (`fetch` / `setTimeout` + `window.open`)**: iOS WebKit is extremely strict on async (especially `fetch` which has a 0-second grace period and is blocked immediately); Android Chromium benefits from the UAv2 mechanism and typically allows it within a 5-second grace period.
 4. **Server-side Delayed 302 Redirect**:
     * Tests opening a new window (`_blank`) directly using an `a tag` or `window.open`, pointing to an API that intentionally delays for 2 seconds on the server side (simulating an async database query) before returning an HTTP 302 redirect.

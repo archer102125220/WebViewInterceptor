@@ -90,26 +90,6 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
 *(補充：此方法會讓原生端攔截到的網址為中繼 API 網址,而非最終目的地網址,若原生端有依賴網址內容進行路由判斷的邏輯,需額外留意此差異)*
 
-### 解法三：利用表單提交 (Form Submit) 繞過非同步限制
-
-另一種在實務上發現的有趣現象是，**透過 `<form>` 表單的 `submit()` 行為，可以有效繞過非同步的彈窗限制**。
-
-- 測試發現，無論是網頁上**既有的表單**，或者是透過 JavaScript **動態建立的 `<form>` 元素**。
-- 即使是在 `setTimeout` (宏任務) 或是 `Promise.resolve().then` (微任務) 等非同步回呼中執行 `form.submit()`，雙平台的 WebView 皆能正常觸發跳轉。
-- **技術原理解析 (Technical Analysis)**：
-  1. **WHATWG HTML 規範的 User Activation 豁免**：根據 W3C/WHATWG HTML Standard 規範，呼叫 `HTMLFormElement.submit()` 被定義為程式化提交（Programmatic Submission）。此操作會**直接執行底層的表單提交與跳轉，並繞過 JavaScript 的 `onsubmit` 事件監聽器**。因其屬於系統層級的直接指令，規範中**明確豁免了此方法對「使用者啟動 (User Activation)」的依賴檢查**。因此，即使在 `Promise`、`fetch`，甚至是**延遲超過 5 秒的 `setTimeout`** 等極端非同步回呼中呼叫 `form.submit()`，亦不會觸發瀏覽器的彈窗攔截機制，雙平台 WebView 皆會無視超時無條件放行跳轉。
-  2. **Android WebViewClient 的底層限制 (針對 POST)**：雖然 POST 表單跳轉成功，但在 Android 上卻會出現「穿透攔截器」的現象。這是因為根據 Android 官方文件，`WebViewClient.shouldOverrideUrlLoading()` **明確標示不會在 POST 請求時被觸發** ("This method is not called for requests using the POST method")。
-  3. **iOS WKWebView 的 IPC 架構缺陷 (針對 POST Body)**：相對地，iOS 的 `WKNavigationDelegate.decidePolicyForNavigationAction` 雖然能成功攔截到 POST 請求，但因為 WKWebView 的網路層與 UI 層分屬不同進程 (Out-of-Process Networking)，基於跨進程通訊 (IPC) 的效能與安全性考量，攔截到的 `NSURLRequest` 其 `httpBody` 永遠為 `nil`（此為著名的 WebKit Bug #140188）。
-  
-  > [!TIP]
-  > **Form GET：目前最完美的純網頁繞過方案**
-  > 綜合實測證實，利用表單送出可以成功無視任何時間長度的非同步機制（例如 6 秒以上的 `setTimeout` 也能完美跳轉，徹底打破 Android 5 秒的 User Activation 寬限期）。
-  > 
-  > - **若使用 POST**：會因為雙平台的原生缺陷（Android 攔不到、iOS 拿不到 Body）而難以作為與原生端通訊的手段。
-  > - **若改用 GET**：不僅擁有與 POST 相同的「無視彈窗封殺」與「無視超時限制」能力，雙平台的原生攔截器也**皆能正常攔截並解析 GET 網址參數**。
-  > 
-  > 因此，若實務上有需要繞過嚴格的非同步限制（包含極端超時）來進行跳轉與參數傳遞，**Form GET 是目前最無副作用的完美純網頁繞過方案**。
-
 ## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 
 即使將原生的彈窗權限關閉，雙平台底層瀏覽器引擎對於「使用者點擊通行證 (User Gesture Token)」的生命週期，有著截然不同的底層實作：
@@ -153,8 +133,6 @@ iOS WebKit 的防禦機制與 Android (Chromium) 存在顯著差異，其歷史�
 - 📖 [WebKit Bugzilla #215014：Move user gesture propagation over promise behind a feature flag (2020 年正式將 Promise 轉送機制預設開啟，但主要針對 WebAuthn) ](https://bugs.webkit.org/show_bug.cgi?id=215014)
 - 📖 [WebKit Bug 313797 / Commit ebeb545：Propagate user gestures through sendMessage (展示 WebKit 至今仍在解決跨 IPC 與擴充功能非同步邊界的手勢遺失問題)](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
 - 📖 [StackOverflow：Safari `window.open` async workaround (業界針對 Safari 非同步彈窗的標準實務解法，但注意其在 Native WebView 環境下會有嚴重副作用)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
-- 📖 [WHATWG HTML Standard：form.submit() (明確說明 submit() 不受使用者啟動限制)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
-- 📖 [WHATWG HTML Standard：Form Submission Algorithm (規範底層表單送出的標準流程，明確指出 submit() 繞過事件與啟動檢查)](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission-algorithm)
 - 📖 [Android 官方文件：WebViewClient.shouldOverrideUrlLoading (標註不攔截 POST 請求)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 - 📖 [WebKit Bugzilla #140188：WKNavigationAction.request.HTTPBody is nil (iOS 攔截 POST 遺失 Body 的歷史懸案)](https://bugs.webkit.org/show_bug.cgi?id=140188)
 ---

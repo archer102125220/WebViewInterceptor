@@ -90,26 +90,6 @@ Instead of having the front-end call `fetch` and wait for the result before exec
 
 *(Additional Note: This method will cause the URL intercepted by the native end to be the intermediate API URL, rather than the final destination URL. If the native end has routing logic that relies on the URL content, you need to pay extra attention to this difference.)*
 
-### Solution 3: Bypassing Async Restrictions via Form Submit
-
-Another interesting phenomenon discovered in practice is that **using the `submit()` behavior of a `<form>` can effectively bypass asynchronous popup restrictions**.
-
-- Tests have revealed that whether it is an **existing form** on the page or a **dynamically created `<form>` element** via JavaScript.
-- Even when `form.submit()` is executed within asynchronous callbacks like `setTimeout` (Macrotask) or `Promise.resolve().then` (Microtask), WebViews on both platforms can trigger redirection normally.
-- **Technical Analysis**:
-  1. **User Activation Exemption in WHATWG HTML Spec**: According to the W3C/WHATWG HTML Standard, calling `HTMLFormElement.submit()` is defined as a programmatic submission. This operation **bypasses JavaScript `onsubmit` event listeners and directly executes the underlying form submission and navigation**. Due to its nature as a direct low-level command, the specification **explicitly exempts this method from User Activation requirements**. Consequently, executing `form.submit()` within asynchronous callbacks, such as `Promise`, `fetch`, or even a **`setTimeout` exceeding the 5-second timeout**, does not trigger the browser's popup blocker, and both platforms will unconditionally allow the navigation to proceed.
-  2. **Android WebViewClient Underlying Limitations (for POST)**: Although the POST form redirection is successful, it "penetrates the interceptor" on Android. This is because, according to the official Android documentation, `WebViewClient.shouldOverrideUrlLoading()` **is explicitly documented to NOT be called for POST requests** ("This method is not called for requests using the POST method").
-  3. **iOS WKWebView IPC Architecture Flaw (for POST Body)**: In contrast, iOS's `WKNavigationDelegate.decidePolicyForNavigationAction` successfully intercepts the POST request. However, because WKWebView's networking process is isolated from the UI process (Out-of-Process Networking), the `httpBody` of the intercepted `NSURLRequest` is always `nil` due to Inter-Process Communication (IPC) performance and security designs (tracked as the infamous WebKit Bug #140188).
-  
-  > [!TIP]
-  > **Form GET: The Perfect Pure-Web Workaround**
-  > Empirical testing confirms that using form submission successfully ignores asynchronous mechanisms of any time length (e.g., a `setTimeout` of 6+ seconds can still perfectly redirect, completely breaking Android's 5-second User Activation grace period).
-  > 
-  > - **If POST is used**: It is difficult to use as a native communication method due to the inherent flaws of both platforms (Android fails to intercept, iOS loses the Body).
-  > - **If GET is used instead**: It not only possesses the exact same ability to "ignore popup blockers" and "ignore timeout restrictions," but native interceptors on both platforms can also **normally intercept and parse GET parameters**.
-  > 
-  > Therefore, if there is a redirection need that must bypass strict asynchronous blocking (including extreme timeouts), **Form GET is currently the perfect pure-web workaround with no side effects**.
-
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
 Even if the native popup permission is turned off, the underlying browser engines of the dual platforms have completely different underlying implementations for the life cycle of the "User Gesture Token":
@@ -153,8 +133,6 @@ Therefore, because the life cycle determination mechanisms of the dual-platform 
 - 📖 [WebKit Bugzilla #215014: Move user gesture propagation over promise behind a feature flag](https://bugs.webkit.org/show_bug.cgi?id=215014)
 - 📖 [WebKit Bug 313797 / Commit ebeb545: Propagate user gestures through sendMessage](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
 - 📖 [StackOverflow: Safari `window.open` async workaround (Standard industry workaround for Safari async popups, but note its severe side effects in Native WebView environments)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
-- 📖 [WHATWG HTML Standard: form.submit() (Explicitly states that submit() is exempt from user activation requirements)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
-- 📖 [WHATWG HTML Standard: Form Submission Algorithm (Specifies the underlying standard process for form submission, explicitly stating that submit() bypasses events and activation checks)](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission-algorithm)
 - 📖 [Android Official Documentation: WebViewClient.shouldOverrideUrlLoading (Notes that it does not intercept POST requests)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 - 📖 [WebKit Bugzilla #140188: WKNavigationAction.request.HTTPBody is nil (The historic issue of lost POST body during iOS interception)](https://bugs.webkit.org/show_bug.cgi?id=140188)
 ---
