@@ -96,8 +96,9 @@ Another interesting phenomenon discovered in practice is that **using the `submi
 
 - Tests have revealed that whether it is an **existing form** on the page or a **dynamically created `<form>` element** via JavaScript.
 - Even when `form.submit()` is executed within asynchronous callbacks like `setTimeout` (Macrotask) or `Promise.resolve().then` (Microtask), WebViews on both platforms can trigger redirection normally.
-- **Speculated Reason**: The underlying browser engine grants a higher level of trust to Form Submission behaviors, and its security review mechanism is independent of the standard `window.open` popup blocker.
-- **Drawback**: Although it can bypass the async popup blocking, as mentioned earlier, a `<form method="POST">` redirection on the Android platform causes the native `shouldOverrideUrlLoading` interception to fail (direct redirection). Therefore, when using this method, it is still necessary to evaluate whether you rely on native interception to execute specific logic.
+- **Technical Analysis**:
+  1. **User Activation Exemption in WHATWG HTML Spec**: According to the W3C/WHATWG HTML Standard, calling `HTMLFormElement.submit()` is defined as a programmatic submission. This operation **bypasses JavaScript `onsubmit` event listeners and directly executes the underlying form submission and navigation**. Due to its nature as a direct low-level command, the specification **explicitly exempts this method from User Activation requirements**. Consequently, executing `form.submit()` within asynchronous callbacks, such as `setTimeout`, `Promise`, or `fetch`, does not trigger the browser's popup blocker, and both platforms will allow the navigation to proceed without restriction.
+  2. **Android WebViewClient Underlying Limitations (for POST)**: Although the redirection is successful, it "penetrates the interceptor" on Android. This is because, according to the official Android documentation, `WebViewClient.shouldOverrideUrlLoading()` **is explicitly documented to NOT be called for POST requests** ("This method is not called for requests using the POST method"). In contrast, iOS uses `WKNavigationDelegate.decidePolicyForNavigationAction`, which still triggers interception even for POST requests (though the POST body data is unavailable). Therefore, when using the form bypass trick, special attention must be paid to the side effect of interception failure on Android.
 
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
@@ -141,7 +142,9 @@ Therefore, because the life cycle determination mechanisms of the dual-platform 
 - 📖 [WebKit Bugzilla #225559: Implement standards-compliant user gesture tracking](https://bugs.webkit.org/show_bug.cgi?id=225559)
 - 📖 [WebKit Bugzilla #215014: Move user gesture propagation over promise behind a feature flag](https://bugs.webkit.org/show_bug.cgi?id=215014)
 - 📖 [WebKit Bug 313797 / Commit ebeb545: Propagate user gestures through sendMessage](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
-- 📖 [StackOverflow: Safari `window.open` async workaround](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
+- 📖 [StackOverflow: Safari `window.open` async workaround (Standard industry workaround for Safari async popups, but note its severe side effects in Native WebView environments)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
+- 📖 [WHATWG HTML Standard: form.submit() (Explicitly states that submit() is exempt from user activation requirements)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
+- 📖 [Android Official Documentation: WebViewClient.shouldOverrideUrlLoading (Notes that it does not intercept POST requests)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 
 ---
 

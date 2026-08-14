@@ -96,8 +96,9 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
 - 測試發現，無論是網頁上**既有的表單**，或者是透過 JavaScript **動態建立的 `<form>` 元素**。
 - 即使是在 `setTimeout` (宏任務) 或是 `Promise.resolve().then` (微任務) 等非同步回呼中執行 `form.submit()`，雙平台的 WebView 皆能正常觸發跳轉。
-- **原因推測**：瀏覽器底層對於表單提交 (Form Submission) 的行為賦予了較高的信任度，其安全審查機制獨立於一般的 `window.open` 彈窗攔截器之外。
-- **缺點**：雖然能繞過非同步彈窗封殺，但如前文所述，在 Android 平台上 `<form method="POST">` 的跳轉會導致原生端的 `shouldOverrideUrlLoading` 攔截失效（直接穿透跳轉），因此在使用時仍需評估是否需要依賴原生端攔截來執行特定邏輯。
+- **技術原理解析 (Technical Analysis)**：
+  1. **WHATWG HTML 規範的 User Activation 豁免**：根據 W3C/WHATWG HTML Standard 規範，呼叫 `HTMLFormElement.submit()` 被定義為程式化提交（Programmatic Submission）。此操作會**直接執行底層的表單提交與跳轉，並繞過 JavaScript 的 `onsubmit` 事件監聽器**。因其屬於系統層級的直接指令，規範中**明確豁免了此方法對「使用者啟動 (User Activation)」的依賴檢查**。因此，即使在 `setTimeout`、`Promise` 或 `fetch` 的非同步回呼中呼叫 `form.submit()`，亦不會觸發瀏覽器的彈窗攔截機制，雙平台 WebView 皆會正常放行跳轉。
+  2. **Android WebViewClient 的底層限制 (針對 POST)**：雖然跳轉成功，但在 Android 上卻會出現「穿透攔截器」的現象。這是因為根據 Android 官方文件，`WebViewClient.shouldOverrideUrlLoading()` **明確標示不會在 POST 請求時被觸發** ("This method is not called for requests using the POST method")。相對地，iOS 採用 `WKNavigationDelegate.decidePolicyForNavigationAction`，即使是 POST 請求依舊會觸發攔截（只是拿不到 POST body 資料）。因此，在使用表單繞過技巧時，需特別留意 Android 攔截失效的副作用。
 
 ## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 
@@ -142,6 +143,8 @@ iOS WebKit 的防禦機制與 Android (Chromium) 存在顯著差異，其歷史�
 - 📖 [WebKit Bugzilla #215014：Move user gesture propagation over promise behind a feature flag (2020 年正式將 Promise 轉送機制預設開啟，但主要針對 WebAuthn) ](https://bugs.webkit.org/show_bug.cgi?id=215014)
 - 📖 [WebKit Bug 313797 / Commit ebeb545：Propagate user gestures through sendMessage (展示 WebKit 至今仍在解決跨 IPC 與擴充功能非同步邊界的手勢遺失問題)](https://github.com/WebKit/WebKit/commit/ebeb54525a799f353a717f2492acf7066433efbc)
 - 📖 [StackOverflow：Safari `window.open` async workaround (業界針對 Safari 非同步彈窗的標準實務解法，但注意其在 Native WebView 環境下會有嚴重副作用)](https://stackoverflow.com/questions/20696041/window-openurl-blank-not-working-on-imac-safari)
+- 📖 [WHATWG HTML Standard：form.submit() (明確說明 submit() 不受使用者啟動限制)](https://html.spec.whatwg.org/multipage/forms.html#dom-form-submit)
+- 📖 [Android 官方文件：WebViewClient.shouldOverrideUrlLoading (標註不攔截 POST 請求)](https://developer.android.com/reference/android/webkit/WebViewClient#shouldOverrideUrlLoading)
 
 ---
 
