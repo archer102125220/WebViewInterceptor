@@ -97,11 +97,18 @@ Another interesting phenomenon discovered in practice is that **using the `submi
 - Tests have revealed that whether it is an **existing form** on the page or a **dynamically created `<form>` element** via JavaScript.
 - Even when `form.submit()` is executed within asynchronous callbacks like `setTimeout` (Macrotask) or `Promise.resolve().then` (Microtask), WebViews on both platforms can trigger redirection normally.
 - **Technical Analysis**:
-  1. **User Activation Exemption in WHATWG HTML Spec**: According to the W3C/WHATWG HTML Standard, calling `HTMLFormElement.submit()` is defined as a programmatic submission. This operation **bypasses JavaScript `onsubmit` event listeners and directly executes the underlying form submission and navigation**. Due to its nature as a direct low-level command, the specification **explicitly exempts this method from User Activation requirements**. Consequently, executing `form.submit()` within asynchronous callbacks, such as `setTimeout`, `Promise`, or `fetch`, does not trigger the browser's popup blocker, and both platforms will allow the navigation to proceed without restriction.
-  2. **Android WebViewClient Underlying Limitations (for POST)**: Although the redirection is successful, it "penetrates the interceptor" on Android. This is because, according to the official Android documentation, `WebViewClient.shouldOverrideUrlLoading()` **is explicitly documented to NOT be called for POST requests** ("This method is not called for requests using the POST method").
+  1. **User Activation Exemption in WHATWG HTML Spec**: According to the W3C/WHATWG HTML Standard, calling `HTMLFormElement.submit()` is defined as a programmatic submission. This operation **bypasses JavaScript `onsubmit` event listeners and directly executes the underlying form submission and navigation**. Due to its nature as a direct low-level command, the specification **explicitly exempts this method from User Activation requirements**. Consequently, executing `form.submit()` within asynchronous callbacks, such as `Promise`, `fetch`, or even a **`setTimeout` exceeding the 5-second timeout**, does not trigger the browser's popup blocker, and both platforms will unconditionally allow the navigation to proceed.
+  2. **Android WebViewClient Underlying Limitations (for POST)**: Although the POST form redirection is successful, it "penetrates the interceptor" on Android. This is because, according to the official Android documentation, `WebViewClient.shouldOverrideUrlLoading()` **is explicitly documented to NOT be called for POST requests** ("This method is not called for requests using the POST method").
   3. **iOS WKWebView IPC Architecture Flaw (for POST Body)**: In contrast, iOS's `WKNavigationDelegate.decidePolicyForNavigationAction` successfully intercepts the POST request. However, because WKWebView's networking process is isolated from the UI process (Out-of-Process Networking), the `httpBody` of the intercepted `NSURLRequest` is always `nil` due to Inter-Process Communication (IPC) performance and security designs (tracked as the infamous WebKit Bug #140188).
-
-  **Summary**: Therefore, while form submission successfully bypasses asynchronous popup blocking, both platforms suffer from severe side effects regarding native interception (Android fails to intercept entirely, and iOS loses the request body). In practice, if you rely on native interception for POST parameter extraction, this workaround is unviable.
+  
+  > [!TIP]
+  > **Form GET: The Perfect Pure-Web Workaround**
+  > Empirical testing confirms that using form submission successfully ignores asynchronous mechanisms of any time length (e.g., a `setTimeout` of 6+ seconds can still perfectly redirect, completely breaking Android's 5-second User Activation grace period).
+  > 
+  > - **If POST is used**: It is difficult to use as a native communication method due to the inherent flaws of both platforms (Android fails to intercept, iOS loses the Body).
+  > - **If GET is used instead**: It not only possesses the exact same ability to "ignore popup blockers" and "ignore timeout restrictions," but native interceptors on both platforms can also **normally intercept and parse GET parameters**.
+  > 
+  > Therefore, if there is a redirection need that must bypass strict asynchronous blocking (including extreme timeouts), **Form GET is currently the perfect pure-web workaround with no side effects**.
 
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
