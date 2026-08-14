@@ -1,9 +1,12 @@
 <!doctype html>
+<!-- eslint-disable -->
+<!-- htmlhint disable -->
+<!-- @formatter:off -->
 <html>
   <head>
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0"
     />
     <style>
       body {
@@ -81,7 +84,7 @@
         href="http://{{SERVER_IP}}:3000/redirect"
         target="_blank"
         style="{{aTagStyle}}"
-        >a tag 測試 (_blank){{btnSuffix}}</a
+         rel="noopener">a tag 測試 (_blank){{btnSuffix}}</a
       >
       <button
         onclick="window.open('http://{{SERVER_IP}}:3000/redirect', '_blank')"
@@ -92,9 +95,9 @@
       </button>
     </div>
 
-    <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>
+        <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>
     <a href="https://www.google.com">1. a tag 當頁跳轉</a>
-    <a href="https://www.google.com" target="_blank">
+    <a href="https://www.google.com" target="_blank" rel="noopener">
       1. a tag 另開分頁 (target="_blank")
     </a>
     <button
@@ -102,6 +105,7 @@
         const a = document.createElement('a');
         a.href = 'https://www.google.com';
         a.target = '_blank';
+        a.rel = 'noopener';
         a.click();
       "
     >
@@ -136,47 +140,12 @@
     </button>
     <button
       onclick="
-        Promise.resolve().then(() => {
-          const a = document.createElement('a');
-          a.href = 'https://www.google.com';
-          a.target = '_blank';
-          a.click();
-        })
-      "
-    >
-      8. Microtask (Promise) 動態建立 a tag (同 Tick 傳遞，雙平台成功)
-    </button>
-    <button
-      onclick="
-        Promise.resolve().then(() =>
-          window.open('https://www.google.com', '_blank'),
-        )
-      "
-    >
-      9. Microtask (Promise) -> window.open (同 Tick 傳遞，雙平台成功)
-    </button>
-    <button
-      onclick="
         fetch('https://jsonplaceholder.typicode.com/todos/1')
           .then((res) => res.json())
           .then(() => (location.href = 'https://www.google.com'))
       "
     >
-      10. 真實情境：Fetch API 回傳後同頁跳轉 (location.href，雙平台皆成功)
-    </button>
-    <button
-      onclick="
-        fetch('https://jsonplaceholder.typicode.com/todos/1')
-          .then((res) => res.json())
-          .then(() => {
-            const a = document.createElement('a');
-            a.href = 'https://www.google.com';
-            a.target = '_self';
-            a.click();
-          })
-      "
-    >
-      11. 真實情境：Fetch API 後動態 a tag 同頁跳轉 (_self，雙平台皆成功)
+      8. 真實情境：Fetch API 回傳後同頁跳轉 (location.href)
     </button>
     <button
       onclick="
@@ -185,129 +154,21 @@
           .then(() => window.open('https://www.google.com', '_self'))
       "
     >
-      12. 真實情境：Fetch API 後 window.open 同頁跳轉 (_self，雙平台皆成功)
+      9. 真實情境：Fetch API 後 window.open 同頁跳轉 (_self)
     </button>
 
     <hr style="border: 1px dashed #ccc; margin: 20px 0" />
     <h4 style="margin-bottom: 5px; color: #28a745; margin-top: 25px">
-      🟢 雙平台皆成功攔截：Form GET 完全繞過非同步限制 (含超時)
+      🟢 雙平台皆成功攔截：Form GET 原頁跳轉 (完全繞過非同步限制)
     </h4>
-    <p
-      style="
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 10px;
-        margin-top: 0;
-      "
-    >
-      實測證實：無論是非同步回呼或超過 Android 5 秒寬限期的極端情境，Form GET 都能完美跳轉，且雙平台原生皆能正常攔截。這是目前最無副作用的純網頁繞過方案。
+    <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px; margin-top: 0;">
+      實測證實：Form GET (target="_self") 完全不受 5 秒寬限期與非同步事件限制，完美跳轉且能被攔截。
     </p>
-    <form
-      id="staticFormGet"
-      method="GET"
-      action="https://www.google.com"
-      style="margin: 10px"
-    >
-      <button
-        type="submit"
-        style="
-          background: #28a745;
-          width: 100%;
-          padding: 15px;
-          font-size: 16px;
-          color: white;
-          border: none;
-          border-radius: 8px;
-        "
-      >
-        13. HTML 靜態表單 GET 跳轉
+    <form id="staticFormGet" method="GET" action="https://www.google.com" style="margin: 10px">
+      <button type="submit" style="background: #28a745; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">
+        10. HTML 靜態表單 GET 跳轉
       </button>
     </form>
-    <button
-      onclick="document.getElementById('staticFormGet').submit()"
-      style="background: #28a745"
-    >
-      14. JS 觸發「靜態表單」 GET (同步)
-    </button>
-    <button
-      onclick="
-        Promise.resolve().then(() =>
-          document.getElementById('staticFormGet').submit(),
-        )
-      "
-      style="background: #28a745"
-    >
-      15. JS 觸發「靜態表單」 GET (Microtask)
-    </button>
-    <button
-      onclick="
-        setTimeout(() => document.getElementById('staticFormGet').submit(), 1000)
-      "
-      style="background: #28a745"
-    >
-      16. JS 觸發「靜態表單」 GET (Macrotask 1s)
-    </button>
-    <button
-      onclick="
-        fetch('https://jsonplaceholder.typicode.com/todos/1')
-          .then(res => res.json())
-          .then(() => document.getElementById('staticFormGet').submit())
-      "
-      style="background: #28a745"
-    >
-      17. 真實情境：Fetch API 後觸發「靜態表單」 GET
-    </button>
-    <button
-      onclick="
-        setTimeout(() => document.getElementById('staticFormGet').submit(), 6000)
-      "
-      style="background: #28a745"
-    >
-      18. JS 觸發「靜態表單」 GET (Macrotask 6s 超時測試)
-    </button>
-
-    <hr style="border: 1px dashed #ccc; margin: 20px 0" />
-
-    <button
-      onclick="
-        const f = document.createElement('form');
-        f.method = 'GET';
-        f.action = 'https://www.google.com';
-        document.body.appendChild(f);
-        f.submit();
-      "
-      style="background: #198754"
-    >
-      19. JS 完全動態建立表單 GET (同步)
-    </button>
-    <button
-      onclick="
-        Promise.resolve().then(() => {
-          const f = document.createElement('form');
-          f.method = 'GET';
-          f.action = 'https://www.google.com';
-          document.body.appendChild(f);
-          f.submit();
-        })
-      "
-      style="background: #198754"
-    >
-      20. JS 完全動態建立表單 GET (Microtask)
-    </button>
-    <button
-      onclick="
-        setTimeout(() => {
-          const f = document.createElement('form');
-          f.method = 'GET';
-          f.action = 'https://www.google.com';
-          document.body.appendChild(f);
-          f.submit();
-        }, 1000)
-      "
-      style="background: #198754"
-    >
-      21. JS 完全動態建立表單 GET (Macrotask 1s)
-    </button>
     <button
       onclick="
         fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -322,7 +183,7 @@
       "
       style="background: #198754"
     >
-      22. 真實情境：Fetch API 後觸發「完全動態建立表單」 GET
+      11. Fetch API 後觸發動態表單 GET
     </button>
     <button
       onclick="
@@ -336,43 +197,22 @@
       "
       style="background: #198754"
     >
-      23. JS 完全動態建立表單 GET (Macrotask 6s 超時測試)
+      12. JS 動態表單 GET (Macrotask 6s 超時)
     </button>
-
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>🟡 平台限制與差異：只有某一方能成功攔截或放行</h3>
-
-    <h4 style="margin-bottom: 5px; color: #d39e00">
-      僅 Android 成功放行與攔截 (iOS 視為惡意彈窗封殺)
-    </h4>
-    <button
-      onclick="
-        setTimeout(() => window.open('https://www.google.com', '_blank'), 1000)
-      "
-    >
-      24. Macrotask (setTimeout 1s) -> window.open (iOS 必擋)
-    </button>
-    <button
-      onclick="
-        setTimeout(() => window.open('https://www.google.com', '_blank'), 3000)
-      "
-    >
-      25. 延遲 3 秒後 window.open
-    </button>
     <button
       onclick="
         fetch('https://jsonplaceholder.typicode.com/todos/1')
           .then((res) => res.json())
           .then(() => {
             const w = window.open('https://www.google.com', '_blank');
-            if (!w)
-              alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
+            if (!w) alert('攔截大失敗！window.open 被封殺！');
           })
       "
     >
-      26. 真實情境：Fetch API 回傳後才 window.open (Android 視網路速度 &lt; 5s
-      放行)
+      13. Fetch 後 window.open (Android &lt; 5s 放行, iOS 必擋)
     </button>
     <button
       onclick="
@@ -382,133 +222,25 @@
             const a = document.createElement('a');
             a.href = 'https://www.google.com';
             a.target = '_blank';
+        a.rel = 'noopener';
             a.click();
           })
       "
     >
-      27. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)
+      14. Fetch 後動態 a tag _blank (Android &lt; 5s 放行, iOS 必擋)
     </button>
 
     <h4 style="margin-bottom: 5px; color: #d39e00; margin-top: 25px">
-      🟡 僅 iOS 成功攔截：Form POST 繞過非同步與超時，但 Android 穿透
+      🟡 Form POST 原頁跳轉 (Android 穿透, iOS 攔截無 Body)
     </h4>
-    <p
-      style="
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 10px;
-        margin-top: 0;
-      "
-    >
-      實測證實：Form POST 同樣能完全無視 Android 5 秒超時限制強制跳轉。但致命缺點是 Android 原生無法攔截 POST 請求，而 iOS 雖能攔截，卻因 IPC 限制導致 Body 為 nil，實務上難以利用。
+    <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px; margin-top: 0;">
+      實測證實：POST 也繞過非同步限制，但 Android 原生無法攔截，iOS 雖攔截但 IPC 限制導致 Body 為 nil。
     </p>
-
-    <form
-      id="staticForm"
-      method="POST"
-      action="https://www.google.com"
-      style="margin: 10px"
-    >
-      <button
-        type="submit"
-        style="
-          background: #dc3545;
-          width: 100%;
-          padding: 15px;
-          font-size: 16px;
-          color: white;
-          border: none;
-          border-radius: 8px;
-        "
-      >
-        28. HTML 靜態表單 POST 跳轉
+    <form id="staticFormPost" method="POST" action="https://www.google.com" style="margin: 10px">
+      <button type="submit" style="background: #d39e00; width: 100%; padding: 15px; font-size: 16px; color: white; border: none; border-radius: 8px;">
+        15. HTML 靜態表單 POST 跳轉
       </button>
     </form>
-    <button
-      onclick="document.getElementById('staticForm').submit()"
-      style="background: #dc3545"
-    >
-      29. JS 觸發「靜態表單」 POST (同步)
-    </button>
-    <button
-      onclick="
-        Promise.resolve().then(() =>
-          document.getElementById('staticForm').submit(),
-        )
-      "
-      style="background: #dc3545"
-    >
-      30. JS 觸發「靜態表單」 POST (Microtask)
-    </button>
-    <button
-      onclick="
-        setTimeout(() => document.getElementById('staticForm').submit(), 1000)
-      "
-      style="background: #dc3545"
-    >
-      31. JS 觸發「靜態表單」 POST (Macrotask 1s)
-    </button>
-    <button
-      onclick="
-        fetch('https://jsonplaceholder.typicode.com/todos/1')
-          .then(res => res.json())
-          .then(() => document.getElementById('staticForm').submit())
-      "
-      style="background: #dc3545"
-    >
-      32. 真實情境：Fetch API 後觸發「靜態表單」 POST
-    </button>
-    <button
-      onclick="
-        setTimeout(() => document.getElementById('staticForm').submit(), 6000)
-      "
-      style="background: #dc3545"
-    >
-      33. JS 觸發「靜態表單」 POST (Macrotask 6s 超時測試)
-    </button>
-
-    <hr style="border: 1px dashed #ccc; margin: 20px 0" />
-
-    <button
-      onclick="
-        const f = document.createElement('form');
-        f.method = 'POST';
-        f.action = 'https://www.google.com';
-        document.body.appendChild(f);
-        f.submit();
-      "
-      style="background: #e02b2b"
-    >
-      34. JS 完全動態建立表單 POST (同步)
-    </button>
-    <button
-      onclick="
-        Promise.resolve().then(() => {
-          const f = document.createElement('form');
-          f.method = 'POST';
-          f.action = 'https://www.google.com';
-          document.body.appendChild(f);
-          f.submit();
-        })
-      "
-      style="background: #e02b2b"
-    >
-      35. JS 完全動態建立表單 POST (Microtask)
-    </button>
-    <button
-      onclick="
-        setTimeout(() => {
-          const f = document.createElement('form');
-          f.method = 'POST';
-          f.action = 'https://www.google.com';
-          document.body.appendChild(f);
-          f.submit();
-        }, 1000)
-      "
-      style="background: #e02b2b"
-    >
-      36. JS 完全動態建立表單 POST (Macrotask 1s)
-    </button>
     <button
       onclick="
         fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -521,9 +253,9 @@
             f.submit();
           })
       "
-      style="background: #e02b2b"
+      style="background: #d39e00"
     >
-      37. 真實情境：Fetch API 後觸發「完全動態建立表單」 POST
+      16. Fetch API 後觸發動態表單 POST
     </button>
     <button
       onclick="
@@ -535,9 +267,9 @@
           f.submit();
         }, 6000)
       "
-      style="background: #e02b2b"
+      style="background: #d39e00"
     >
-      38. JS 完全動態建立表單 POST (Macrotask 6s 超時測試)
+      17. JS 動態表單 POST (Macrotask 6s 超時)
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
@@ -548,18 +280,17 @@
         alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！');
       "
     >
-      39. SPA 路由切換 (history.pushState)
+      18. SPA 路由切換 (history.pushState)
     </button>
     <button
       onclick="
         setTimeout(() => {
           const w = window.open('https://www.google.com', '_blank');
-          if (!w)
-            alert('攔截大失敗！window.open 被瀏覽器底層當作惡意彈窗封殺了！');
+          if (!w) alert('攔截大失敗！window.open 被瀏覽器底層封殺了！');
         }, 6000)
       "
     >
-      40. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)
+      19. 延遲 6 秒後 window.open (雙平台皆封殺)
     </button>
     <button
       onclick="
@@ -567,17 +298,48 @@
           const a = document.createElement('a');
           a.href = 'https://www.google.com';
           a.target = '_blank';
+        a.rel = 'noopener';
           a.click();
         }, 6000)
       "
     >
-      41. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)
+      20. 延遲 6 秒動態建立 a tag _blank (雙平台皆封殺)
+    </button>
+    <button
+      onclick="
+        setTimeout(() => {
+          const f = document.createElement('form');
+          f.method = 'GET';
+          f.action = 'https://www.google.com';
+          f.target = '_blank';
+          document.body.appendChild(f);
+          f.submit();
+        }, 6000)
+      "
+      style="background: #dc3545"
+    >
+      21. 延遲 6 秒動態表單 GET _blank (雙平台皆封殺)
+    </button>
+    <button
+      onclick="
+        setTimeout(() => {
+          const f = document.createElement('form');
+          f.method = 'POST';
+          f.action = 'https://www.google.com';
+          f.target = '_blank';
+          document.body.appendChild(f);
+          f.submit();
+        }, 6000)
+      "
+      style="background: #dc3545"
+    >
+      22. 延遲 6 秒動態表單 POST _blank (雙平台皆封殺)
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
     <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">
-      42. 同步觸發 JSBridge 開啟網址
+      23. 同步觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -586,7 +348,7 @@
         )
       "
     >
-      43. Microtask (Promise) 觸發 JSBridge 開啟網址
+      24. Microtask (Promise) 觸發 JSBridge
     </button>
     <button
       onclick="
@@ -596,7 +358,7 @@
         )
       "
     >
-      44. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址
+      25. Macrotask (setTimeout 1s) 觸發 JSBridge
     </button>
     <button
       onclick="
@@ -606,7 +368,7 @@
         )
       "
     >
-      45. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)
+      26. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 5s 封殺)
     </button>
     <button
       onclick="
@@ -615,7 +377,7 @@
           .then(() => callNativeBridgeToOpenUrl('https://www.google.com'))
       "
     >
-      46. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址
+      27. 真實情境：Fetch API 後觸發 JSBridge
     </button>
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>原有的自定義攔截測試</h3>
