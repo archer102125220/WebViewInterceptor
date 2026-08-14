@@ -189,10 +189,10 @@
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
-    <h3>🟡 平台限制與差異：只有某一方會成功</h3>
+    <h3>🟡 平台限制與差異：只有某一方能成功攔截或放行</h3>
 
     <h4 style="margin-bottom: 5px; color: #d39e00">
-      僅 Android 成功 (iOS 視為惡意彈窗封殺)
+      僅 Android 成功放行與攔截 (iOS 視為惡意彈窗封殺)
     </h4>
     <button
       onclick="
@@ -237,10 +237,27 @@
       17. 真實情境：Fetch API 後動態 a tag (Android 視網路速度 &lt; 5s 放行)
     </button>
 
-    <h4 style="margin-bottom: 5px; color: #d39e00">
-      僅 iOS 成功 (Android 原生攔截器穿透)
+    <h4 style="margin-bottom: 5px; color: #d39e00; margin-top: 25px">
+      僅 iOS 成功攔截 (Android 原生攔截器會被穿透)
     </h4>
-    <form id="staticForm" method="POST" action="https://www.google.com" style="margin: 10px">
+    <p
+      style="
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+        margin-top: 0;
+      "
+    >
+      Form 表單 POST 不論在宏微任務或非同步 Fetch API 後，網頁層皆可正常觸發跳轉且完全繞過非同步彈窗封殺限制，但 Android
+      預設無法正確攔截 POST 請求。
+    </p>
+
+    <form
+      id="staticForm"
+      method="POST"
+      action="https://www.google.com"
+      style="margin: 10px"
+    >
       <button
         type="submit"
         style="
@@ -253,35 +270,45 @@
           border-radius: 8px;
         "
       >
-        18-1. HTML 靜態表單 POST 跳轉
+        18. HTML 靜態表單 POST 跳轉
       </button>
     </form>
     <button
-      onclick="document.getElementById('staticForm').submit();"
-      style="
-        background: #dc3545;
-      "
+      onclick="document.getElementById('staticForm').submit()"
+      style="background: #dc3545"
     >
-      18-2. JS 觸發「靜態表單」 POST (同步)
+      19. JS 觸發「靜態表單」 POST (同步)
     </button>
     <button
-      onclick="Promise.resolve().then(() => document.getElementById('staticForm').submit());"
-      style="
-        background: #dc3545;
+      onclick="
+        Promise.resolve().then(() =>
+          document.getElementById('staticForm').submit(),
+        )
       "
+      style="background: #dc3545"
     >
-      18-3. JS 觸發「靜態表單」 POST (Microtask)
+      20. JS 觸發「靜態表單」 POST (Microtask)
     </button>
     <button
-      onclick="setTimeout(() => document.getElementById('staticForm').submit(), 1000);"
-      style="
-        background: #dc3545;
+      onclick="
+        setTimeout(() => document.getElementById('staticForm').submit(), 1000)
       "
+      style="background: #dc3545"
     >
-      18-4. JS 觸發「靜態表單」 POST (Macrotask 1s)
+      21. JS 觸發「靜態表單」 POST (Macrotask 1s)
+    </button>
+    <button
+      onclick="
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+          .then(res => res.json())
+          .then(() => document.getElementById('staticForm').submit())
+      "
+      style="background: #dc3545"
+    >
+      22. 真實情境：Fetch API 後觸發「靜態表單」 POST
     </button>
 
-    <hr style="border: 1px dashed #ccc; margin: 20px 0;" />
+    <hr style="border: 1px dashed #ccc; margin: 20px 0" />
 
     <button
       onclick="
@@ -291,11 +318,9 @@
         document.body.appendChild(f);
         f.submit();
       "
-      style="
-        background: #e02b2b;
-      "
+      style="background: #e02b2b"
     >
-      18-5. JS 完全動態建立表單 POST (同步)
+      23. JS 完全動態建立表單 POST (同步)
     </button>
     <button
       onclick="
@@ -307,11 +332,9 @@
           f.submit();
         })
       "
-      style="
-        background: #e02b2b;
-      "
+      style="background: #e02b2b"
     >
-      18-6. JS 完全動態建立表單 POST (Microtask)
+      24. JS 完全動態建立表單 POST (Microtask)
     </button>
     <button
       onclick="
@@ -323,11 +346,25 @@
           f.submit();
         }, 1000)
       "
-      style="
-        background: #e02b2b;
-      "
+      style="background: #e02b2b"
     >
-      18-7. JS 完全動態建立表單 POST (Macrotask 1s)
+      25. JS 完全動態建立表單 POST (Macrotask 1s)
+    </button>
+    <button
+      onclick="
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+          .then(res => res.json())
+          .then(() => {
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = 'https://www.google.com';
+            document.body.appendChild(f);
+            f.submit();
+          })
+      "
+      style="background: #e02b2b"
+    >
+      26. 真實情境：Fetch API 後觸發「完全動態建立表單」 POST
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
@@ -338,7 +375,7 @@
         alert('網址已變更為 #new-page，但原生攔截器完全沒收到通知！');
       "
     >
-      19. SPA 路由切換 (history.pushState)
+      27. SPA 路由切換 (history.pushState)
     </button>
     <button
       onclick="
@@ -349,7 +386,7 @@
         }, 6000)
       "
     >
-      20. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)
+      28. 延遲 6 秒後 window.open (超出 Android 5秒寬限期)
     </button>
     <button
       onclick="
@@ -361,13 +398,13 @@
         }, 6000)
       "
     >
-      21. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)
+      29. Macrotask (延遲 6 秒) 動態建立 a tag (雙平台皆封殺)
     </button>
 
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>🟣 JSBridge 原生通訊 (完美避開所有攔截與封殺)</h3>
     <button onclick="callNativeBridgeToOpenUrl('https://www.google.com')">
-      22. 同步觸發 JSBridge 開啟網址
+      30. 同步觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -376,7 +413,7 @@
         )
       "
     >
-      23. Microtask (Promise) 觸發 JSBridge 開啟網址
+      31. Microtask (Promise) 觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -386,7 +423,7 @@
         )
       "
     >
-      24. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址
+      32. Macrotask (setTimeout 1s) 觸發 JSBridge 開啟網址
     </button>
     <button
       onclick="
@@ -396,7 +433,7 @@
         )
       "
     >
-      25. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)
+      33. Macrotask (延遲 6 秒) 觸發 JSBridge (突破 Android 5秒封殺)
     </button>
     <button
       onclick="
@@ -405,9 +442,8 @@
           .then(() => callNativeBridgeToOpenUrl('https://www.google.com'))
       "
     >
-      26. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址
+      34. 真實情境：Fetch API 回傳後觸發 JSBridge 開啟網址
     </button>
-
     <hr style="margin-top: 30px; margin-bottom: 20px" />
     <h3>原有的自定義攔截測試</h3>
     <button onclick="location.href = 'myapp://open_profile?user_id=123'">

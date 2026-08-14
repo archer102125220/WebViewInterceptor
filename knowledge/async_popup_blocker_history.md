@@ -90,6 +90,15 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
 *(補充：此方法會讓原生端攔截到的網址為中繼 API 網址,而非最終目的地網址,若原生端有依賴網址內容進行路由判斷的邏輯,需額外留意此差異)*
 
+### 解法三：利用表單提交 (Form Submit) 繞過非同步限制
+
+另一種在實務上發現的有趣現象是，**透過 `<form>` 表單的 `submit()` 行為，可以有效繞過非同步的彈窗限制**。
+
+- 測試發現，無論是網頁上**既有的表單**，或者是透過 JavaScript **動態建立的 `<form>` 元素**。
+- 即使是在 `setTimeout` (宏任務) 或是 `Promise.resolve().then` (微任務) 等非同步回呼中執行 `form.submit()`，雙平台的 WebView 皆能正常觸發跳轉。
+- **原因推測**：瀏覽器底層對於表單提交 (Form Submission) 的行為賦予了較高的信任度，其安全審查機制獨立於一般的 `window.open` 彈窗攔截器之外。
+- **缺點**：雖然能繞過非同步彈窗封殺，但如前文所述，在 Android 平台上 `<form method="POST">` 的跳轉會導致原生端的 `shouldOverrideUrlLoading` 攔截失效（直接穿透跳轉），因此在使用時仍需評估是否需要依賴原生端攔截來執行特定邏輯。
+
 ## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 
 即使將原生的彈窗權限關閉，雙平台底層瀏覽器引擎對於「使用者點擊通行證 (User Gesture Token)」的生命週期，有著截然不同的底層實作：

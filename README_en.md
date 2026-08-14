@@ -17,7 +17,7 @@ The establishment of this project stems from the common cognitive gaps during cr
 2. **Asynchronous Script Triggered (Event Loop Testing)**: Redirections triggered via `Promise.resolve().then` (Microtask) and `setTimeout` (Macrotask).
 3. **Interception Blind Spots / Failure Testing**:
     * **SPA Routing Switch (`history.pushState`)**: Interception fails on both platforms (no reload behavior).
-    * **Form POST Redirection (`<form method="POST">`)**: Android interception fails (direct redirection), iOS successfully intercepts.
+    * **Form POST Redirection (`<form method="POST">`)**: Android interception fails (direct redirection), iOS successfully intercepts. Furthermore, tests show that whether it is an existing or dynamically created form, executing `submit()` under Macrotasks or Microtasks will normally trigger redirection, bypassing asynchronous blocking restrictions.
     * **Asynchronous and Delayed Popups (`fetch` / `setTimeout` + `window.open`)**: iOS WebKit is extremely strict on async (especially `fetch` which has a 0-second grace period and is blocked immediately); Android Chromium benefits from the UAv2 mechanism and typically allows it within a 5-second grace period.
 4. **Server-side Delayed 302 Redirect**:
     * Tests opening a new window (`_blank`) directly using an `a tag` or `window.open`, pointing to an API that intentionally delays for 2 seconds on the server side (simulating an async database query) before returning an HTTP 302 redirect.

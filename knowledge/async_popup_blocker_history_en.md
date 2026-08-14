@@ -90,6 +90,15 @@ Instead of having the front-end call `fetch` and wait for the result before exec
 
 *(Additional Note: This method will cause the URL intercepted by the native end to be the intermediate API URL, rather than the final destination URL. If the native end has routing logic that relies on the URL content, you need to pay extra attention to this difference.)*
 
+### Solution 3: Bypassing Async Restrictions via Form Submit
+
+Another interesting phenomenon discovered in practice is that **using the `submit()` behavior of a `<form>` can effectively bypass asynchronous popup restrictions**.
+
+- Tests have revealed that whether it is an **existing form** on the page or a **dynamically created `<form>` element** via JavaScript.
+- Even when `form.submit()` is executed within asynchronous callbacks like `setTimeout` (Macrotask) or `Promise.resolve().then` (Microtask), WebViews on both platforms can trigger redirection normally.
+- **Speculated Reason**: The underlying browser engine grants a higher level of trust to Form Submission behaviors, and its security review mechanism is independent of the standard `window.open` popup blocker.
+- **Drawback**: Although it can bypass the async popup blocking, as mentioned earlier, a `<form method="POST">` redirection on the Android platform causes the native `shouldOverrideUrlLoading` interception to fail (direct redirection). Therefore, when using this method, it is still necessary to evaluate whether you rely on native interception to execute specific logic.
+
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
 Even if the native popup permission is turned off, the underlying browser engines of the dual platforms have completely different underlying implementations for the life cycle of the "User Gesture Token":

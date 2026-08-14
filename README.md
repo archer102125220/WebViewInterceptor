@@ -17,7 +17,7 @@
 2. **非同步腳本觸發 (Event Loop 測試)**：透過 `Promise.resolve().then` (微任務) 與 `setTimeout` (宏任務) 觸發的跳轉。
 3. **攔截死角 / 失效測試**：
     * **SPA 路由切換 (`history.pushState`)**：雙平台皆攔截失效（無重新載入行為）。
-    * **表單 POST 跳轉 (`<form method="POST">`)**：Android 攔截穿透失效（直接跳轉），iOS 成功攔截。
+    * **表單 POST 跳轉 (`<form method="POST">`)**：Android 攔截穿透失效（直接跳轉），iOS 成功攔截。此外，測試發現無論是既有或動態建立的 form 表單，在宏微任務下執行 `submit()` 皆能正常觸發跳轉，不受非同步封殺限制。
     * **非同步與延遲彈窗 (`fetch` / `setTimeout` + `window.open`)**：iOS WebKit 對非同步極度嚴格 (特別是 `fetch` 具有 0 秒寬限期，會立刻封殺)；Android Chromium 則受惠於 UAv2 機制，在 5 秒的寬限期內通常會放行。
 4. **伺服器端延遲跳轉 (Server-side Delayed 302 Redirect)**：
     * 測試直接使用 `a tag` 或 `window.open` 開啟新視窗 (`_blank`)，並指向一個在伺服器端故意延遲 2 秒（模擬非同步資料庫查詢）才回傳 HTTP 302 的 API。
