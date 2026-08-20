@@ -76,7 +76,7 @@
         margin-bottom: 20px;
       "
     >
-      <h3 style="margin-top: 0; color: #0d6efd">🚀 進階實驗：302 延遲跳轉</h3>
+      <h3 style="margin-top: 0; color: #0d6efd">🚀 進階實驗：WebServer 跳轉與表單中繼</h3>
       <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px">
         測試直接跳轉到 WebServer 上的 /redirect，並以 _blank 處理
       </p>
@@ -84,15 +84,33 @@
         href="http://{{SERVER_IP}}:3000/redirect"
         target="_blank"
         style="{{aTagStyle}}"
-         rel="noopener">a tag 測試 (_blank){{btnSuffix}}</a
+         rel="noopener">302 重新導向：a tag 測試 (_blank){{btnSuffix}}</a
       >
       <button
         onclick="window.open('http://{{SERVER_IP}}:3000/redirect', '_blank')"
         style="{{btnStyle}}"
         {{btnDisabledAttr}}
       >
-        window.open 測試 (_blank){{btnSuffix}}
+        302 重新導向：window.open 測試 (_blank){{btnSuffix}}
       </button>
+
+      <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ced4da;" />
+
+      <p style="font-size: 14px; color: #6c757d; margin-bottom: 10px">
+        測試以新開分頁 (_blank) 開啟 Server 中繼頁面，在中繼頁直接呼叫 API 取得參數後以 Form (GET/POST) 跳轉至目的地
+      </p>
+      <a
+        href="http://{{SERVER_IP}}:3000/form-bridge?method=GET"
+        target="_blank"
+        style="{{aTagStyle}}"
+        rel="noopener">Server 中繼頁 GET 表單跳轉 (_blank){{btnSuffix}}</a
+      >
+      <a
+        href="http://{{SERVER_IP}}:3000/form-bridge?method=POST"
+        target="_blank"
+        style="{{aTagStyle}}"
+        rel="noopener">Server 中繼頁 POST 表單跳轉 (_blank){{btnSuffix}}</a
+      >
     </div>
 
         <h3>🟢 雙平台皆成功：A Tag 實體點擊</h3>

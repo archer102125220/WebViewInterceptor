@@ -24,6 +24,9 @@
 4. **伺服器端延遲跳轉 (Server-side Delayed 302 Redirect)**：
     * 測試直接使用 `a tag` 或 `window.open` 開啟新視窗 (`_blank`)，並指向一個在伺服器端故意延遲 2 秒（模擬非同步資料庫查詢）才回傳 HTTP 302 的 API。
     * **結果**：雙平台皆能正常運作並成功跳轉！這證實了只要將非同步等待的過程轉移至伺服器端，就能完美繞過 WebView 對 JS 非同步回呼 (async callback) 嚴格的彈窗安全封殺限制。
+5. **伺服器端中繼表單跳轉 (Server-side Form Bridge: GET & POST)**：
+    * 測試以新開分頁 (`target="_blank"`) 開啟 Server 上的中繼頁面，中繼頁載入時直接於 `<script>` 內呼叫 API 取得目的地 URL 與參數，再透過 Web Form (GET / POST) 跳轉至目的地結果頁。
+    * **結果**：開新分頁的動作在點擊當下即同步建立，抵達中繼頁後是在獨立頁面生命週期內執行同頁 Web Form 跳轉，能順利帶入參數並完成跳轉。
 
 ---
 

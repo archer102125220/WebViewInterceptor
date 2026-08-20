@@ -1,55 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>302 Redirect Test</title>
+    <title>WebServer 跳轉與表單中繼測試</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             padding: 20px;
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
+            color: #333;
         }
         .test-case {
-            border: 1px solid #ccc;
+            border: 1px solid #dee2e6;
             padding: 20px;
             margin-bottom: 20px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+            border-radius: 10px;
+            background-color: #f8f9fa;
         }
         button, a.button-style {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
+            padding: 12px 20px;
+            background-color: #0d6efd;
             color: white;
             text-decoration: none;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
             text-align: center;
         }
+        a.button-style.btn-green {
+            background-color: #198754;
+        }
+        a.button-style.btn-orange {
+            background-color: #fd7e14;
+        }
         button:hover, a.button-style:hover {
-            background-color: #0056b3;
+            opacity: 0.9;
+        }
+        code {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <h1>302 Redirect Delay Test</h1>
-    <p>這個頁面用於測試雙平台 WebView 處理帶有延遲的 302 重新導向，並且是另開新分頁 (target="_blank") 的情況。</p>
+    <h1>🚀 WebServer 跳轉測試控制台</h1>
+    <p>此頁面用於測試雙平台 WebView 處理帶有非同步延遲、302 重新導向與表單中繼跳轉情境。</p>
 
     <div class="test-case">
-        <h2>Test 1: <code>&lt;a target="_blank"&gt;</code></h2>
-        <p>使用標準 a 標籤配合 <code>target="_blank"</code> 跳轉到 /redirect。</p>
-        <a href="/redirect" target="_blank" class="button-style">Open Link (a tag)</a>
+        <h2>實驗 1：302 延遲重新導向 (a tag _blank)</h2>
+        <p>點擊 <code>&lt;a target="_blank"&gt;</code> 跳轉到 <code>/redirect</code> (後端延遲 2 秒回傳 302)。</p>
+        <a href="/redirect" target="_blank" class="button-style">開啟 302 測試 (a tag)</a>
     </div>
 
     <div class="test-case">
-        <h2>Test 2: <code>window.open()</code></h2>
-        <p>使用 JavaScript <code>window.open('/redirect', '_blank')</code> 跳轉到 /redirect。</p>
-        <button onclick="window.open('/redirect', '_blank')">Open Link (window.open)</button>
+        <h2>實驗 2：302 延遲重新導向 (window.open)</h2>
+        <p>使用 <code>window.open('/redirect', '_blank')</code> 跳轉到 <code>/redirect</code>。</p>
+        <button onclick="window.open('/redirect', '_blank')">開啟 302 測試 (window.open)</button>
+    </div>
+
+    <div class="test-case">
+        <h2>實驗 3：中繼頁面 API + Form GET 跳轉</h2>
+        <p>以 <code>target="_blank"</code> 開啟 <code>/form-bridge?method=GET</code>，中繼頁載入時於 <code>&lt;script&gt;</code> 內直接呼叫 API 取得參數，並透過 Form GET 跳轉到結果頁。</p>
+        <a href="/form-bridge?method=GET" target="_blank" class="button-style btn-green">測試 Form GET 中繼跳轉 (_blank)</a>
+    </div>
+
+    <div class="test-case">
+        <h2>實驗 4：中繼頁面 API + Form POST 跳轉</h2>
+        <p>以 <code>target="_blank"</code> 開啟 <code>/form-bridge?method=POST</code>，中繼頁載入時於 <code>&lt;script&gt;</code> 內直接呼叫 API 取得參數，並透過 Form POST 跳轉到結果頁。</p>
+        <a href="/form-bridge?method=POST" target="_blank" class="button-style btn-orange">測試 Form POST 中繼跳轉 (_blank)</a>
     </div>
 
 </body>

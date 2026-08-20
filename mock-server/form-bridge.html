@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中繼跳轉頁面 (Form Bridge)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            max-width: 500px;
+            margin: 40px auto;
+        }
+        .spinner {
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #0d6efd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            color: #495057;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .badge-get { background-color: #e7f5ff; color: #1c7ed6; }
+        .badge-post { background-color: #fff3bf; color: #d9480f; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔄 Server 中繼頁面處理中</h2>
+        <div id="methodBadge" class="badge">檢測中...</div>
+        <div class="spinner"></div>
+        <p id="status" class="status">正在向 API 請求目的地 URL 與表單參數...</p>
+    </div>
+
+    <script>
+        async function executeFormBridge() {
+            const statusEl = document.getElementById('status');
+            const badgeEl = document.getElementById('methodBadge');
+            
+            const searchParams = new URLSearchParams(window.location.search);
+            const requestedMethod = (searchParams.get('method') || 'GET').toUpperCase();
+            
+            if (requestedMethod === 'POST') {
+                badgeEl.className = 'badge badge-post';
+                badgeEl.innerText = '模式：Form POST';
+            } else {
+                badgeEl.className = 'badge badge-get';
+                badgeEl.innerText = '模式：Form GET';
+            }
+
+            try {
+                // 1. 呼叫 Server API 取得目的地 URL 與參數
+                statusEl.innerText = '正在向 /api/target-info 發送 API 請求...';
+                const response = await fetch('/api/target-info?method=' + encodeURIComponent(requestedMethod));
+                if (!response.ok) {
+                    throw new Error('API 回應錯誤 (' + response.status + ')');
+                }
+                
+                const data = await response.json();
+                const targetUrl = data.targetUrl || '/form-result';
+                const method = (data.method || requestedMethod).toUpperCase();
+                const params = data.params || {};
+
+                statusEl.innerText = '取得資料成功！正在建立 ' + method + ' 表單並跳轉至 ' + targetUrl + '...';
+
+                // 2. 動態建立 Web Form
+                const form = document.createElement('form');
+                form.method = method;
+                form.action = targetUrl;
+                form.style.display = 'none';
+
+                for (const [key, value] of Object.entries(params)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = typeof value === 'object' ? JSON.stringify(value) : value;
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                
+                // 3. 提交表單跳轉
+                form.submit();
+            } catch (error) {
+                statusEl.style.color = '#dc3545';
+                statusEl.innerText = '跳轉失敗：' + error.message;
+            }
+        }
+
+        // 直接在 <script> 頂層呼叫執行，不綁定在任何 DOM / Window 事件上
+        executeFormBridge();
+    </script>
+</body>
+</html>

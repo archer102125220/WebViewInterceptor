@@ -24,6 +24,9 @@ The establishment of this project stems from the common cognitive gaps during cr
 4. **Server-side Delayed 302 Redirect**:
     * Tests opening a new window (`_blank`) directly using an `a tag` or `window.open`, pointing to an API that intentionally delays for 2 seconds on the server side (simulating an async database query) before returning an HTTP 302 redirect.
     * **Result**: Works perfectly on both platforms! This proves that as long as the asynchronous waiting process is shifted to the server side, it can perfectly bypass the strict popup security restrictions imposed by WebViews on JS async callbacks.
+5. **Server-side Form Bridge (GET & POST)**:
+    * Tests opening an intermediary server page in a new tab (`target="_blank"`), where the intermediary page directly triggers an API call in `<script>` upon load to fetch the destination URL and parameters, and then submits a Web Form (GET / POST) to navigate to the result page.
+    * **Result**: Because the new tab is opened synchronously on user click, subsequent form navigation happens within the new page's own lifecycle and successfully forwards GET and POST parameters.
 
 ---
 
