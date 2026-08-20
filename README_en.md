@@ -71,15 +71,15 @@ The establishment of this project stems from the common cognitive gaps during cr
 
 ---
 
-### 🚀 Advanced Experiment: Local WebServer 302 Delayed Redirect Test
+### 🚀 Advanced Experiment: WebServer 302 Redirect & Form Bridge Tests
 
-To practically test the 4th scenario mentioned above, a lightweight Node.js server is built into this project.
+To practically test the 4th and 5th scenarios mentioned above, a lightweight Node.js server is built into this project.
 
 1. Ensure [Node.js](https://nodejs.org/) is installed on your computer.
 2. Open a terminal and enter the project's `mock-server/` folder.
 3. Run `node server.js` to start the server.
 4. **Auto-Configuration**: When the server starts, it will automatically detect your current local area network IP and write it into the configuration files for Android (`env.properties`) and iOS (`ServerConfig.swift`).
-5. Keep the server running, recompile, and launch the Android or iOS App. The App will automatically read this IP, and you will see a dedicated **302 Delay Test section** at the top of the home page; click to test the effect.
+5. Keep the server running, recompile, and launch the Android or iOS App. The App will automatically read this IP, and you will see a dedicated **Advanced Experiments section** at the top of the home page, containing 302 redirect, Form (GET/POST) bridge navigation, and 6-second timeout tests; click to test the effects.
 
 ---
 

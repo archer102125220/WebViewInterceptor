@@ -62,6 +62,6 @@ When planning cross-platform WebView development, it is very important to unders
 
 Although modern Android phones equipped with GMS behave largely consistently on WebView, as long as the target audience of the project includes **users who use super Apps (like WeChat)**, **users using non-GMS devices (mainland China market)**, or even **phones subjected to system-level restrictions from major OEMs (Samsung, Xiaomi, etc.)**, the stability of relying on native popups (`window.open` or `<a target="_blank">`) remains a disaster.
 
-This further reinforces our conclusion that we should adopt **JSBridge**:
+This further reinforces our conclusion that we should adopt **JSBridge** or **Server-side Intermediary Architectures (302 Redirect / Form Bridge)**:
 
-By directly passing redirection requests and parameters to native Native APIs via JSBridge, we can completely bypass Chromium, WebKit, Tencent X5, and even the heavy modifications and underlying system restrictions of major phone brands, achieving a 100% stable and controllable cross-platform webpage redirection.
+By delegating the redirection authority to native APIs through these architectures, or by shifting the asynchronous waiting process to the backend network transport layer, we can completely bypass Chromium, WebKit, Tencent X5, and even the heavy modifications and underlying system restrictions of major phone brands, achieving a 100% stable and controllable cross-platform webpage redirection.

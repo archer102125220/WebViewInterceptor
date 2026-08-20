@@ -50,7 +50,8 @@ In real online environments, front-end developers often face **more uncontrollab
 
 **As long as the browser's native popups (`window.open` / `target="_blank"`) are involved, the initiative for defense will always remain in the hands of Apple and native App developers.**
 
-The only solution that the front-end can grasp 100% and guarantee stable operation is to **abandon reliance on the native browser's popup behavior**, and switch to:
+The only solutions that the front-end can grasp 100% and guarantee stable operation are to **avoid relying on browser popups inside asynchronous callbacks**, and switch to:
 1. **In-Page Routing Redirection (SPA)**
 2. **In-Page Redirection (`location.href`)** avoiding popup blocker
 3. **Via JSBridge** calling native App Functions, letting the native App decide whether to open the system default browser or push a new WebView window.
+4. **Server-side Intermediary Architectures (302 Redirect / Form Bridge)**: Front-end opens the window synchronously and shifts the asynchronous waiting to the backend, completely dodging iOS WebKit's ruthless cancellation of async gesture Tokens.

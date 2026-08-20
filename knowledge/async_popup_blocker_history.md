@@ -30,11 +30,11 @@
 當前端透過 `fetch` 或 `setTimeout` 等待時，Event Loop 會中斷（可以想像成被切為不同於使用者操作事件的執行緒做後續動作）。當非同步任務結束並執行到 `window.open` 時，系統底層核發的「實體點擊通行證 (User Gesture Token)」已經過期或遺失。
 此時 WebView 會判定這是一個 **「沒有實體點擊（使用者操作）背書的惡意背景彈窗」**，進而將其無情封殺。
 
-## 3. 解決方案：JSBridge 與伺服器端 302 重新導向
+## 3. 解決方案：JSBridge 與伺服器端架構 (302 重導向 / 中繼表單)
 
-面對上述嚴格的防禦機制，純前端的繞過手法（如建立隱藏 `<a>` 並觸發 `.click()`）極度不穩定且易被阻擋。目前業界有兩種能保證 100% 成功率的標準解法：
+面對上述嚴格的防禦機制，純前端的繞過手法（如建立隱藏 `<a>` 並觸發 `.click()`）極度不穩定且易被阻擋。目前業界有三種能保證 100% 成功率的標準架構解法：
 
-### 解法一：放棄 URL 攔截，擁抱 JSBridge (最常見)
+### 解法一：放棄 URL 攔截，擁抱 JSBridge (最常見、最高自由度)
 
 不要透過瀏覽器的 `window.open` 引擎，而是讓前端「直接命令」原生 App 去開畫面。
 
@@ -90,6 +90,30 @@ webView.addJavascriptInterface(WebAppInterface(this), "AndroidApp")
 
 *(補充：此方法會讓原生端攔截到的網址為中繼 API 網址,而非最終目的地網址,若原生端有依賴網址內容進行路由判斷的邏輯,需額外留意此差異)*
 
+### 解法三：伺服器端中繼頁面 + Web Form 跳轉 (Server-side Form Bridge: GET & POST)
+
+當跳轉目標需要**攜帶大量參數或 POST 敏感資料**（例如第三方金流支付、OAuth 驗證等），單純的 302 GET 重導向可能無法滿足需求（URL 長度受限且敏感參數易洩漏於 URL 紀錄中）。此時「伺服器端中繼頁面 + Form 跳轉」是另一種強大的標準架構：
+
+1. **前端同步開啟中繼頁**：使用者點擊時，前端以同步方式執行 `<a href="https://server.com/form-bridge?method=POST" target="_blank">` 開啟 Server 端的中繼跳轉頁。
+2. **中繼頁內呼叫 API 並組裝表單**：中繼頁在獨立的新視窗環境載入後，於 `<script>` 內直接發起非同步 `fetch` 向後端 API 索取目的地 URL 與表單參數。
+3. **提交同頁表單**：取得資料後，動態建立 `<form method="POST" action="targetUrl">`，塞入 hidden inputs 並調用 `form.submit()`。
+
+**中繼表單跳轉的優勢**：
+- **完整支援 POST 與 Payload**：突破 URL 長度限制，完美支援需要 POST 傳參的業務場景。
+- **無視非同步超時限制**：因為開新分頁是在使用者點擊的當下「同步」完成的，後續在中繼頁內部發生的非同步 API 等待（即便耗時超過 Android 5 秒或 iOS 1 秒寬限期），隨後的 `form.submit()` 屬於「同頁導航」而非「開新彈窗」，完全不會觸發 WebView 的彈窗阻擋機制 (Popup Blocker)！
+- *(註：本專案的 mock-server 已實作此機制的 Demo，包含常規與 6 秒超時測試，實測雙平台皆可順利放行！)*
+
+### 📊 三大解決方案深度架構比較表
+
+| 方案維度 | 1. JSBridge 原生通訊 | 2. 伺服器端 302 重新導向 | 3. 伺服器端中繼 Form 跳轉 |
+| :--- | :--- | :--- | :--- |
+| **運作機制** | Web 呼叫 Native Function，原生直接叫起系統瀏覽器 | 前端同步開新窗，後端處理非同步並回傳 302 Location | 前端同步開中繼頁，中繼頁調用 API 並執行同頁 Form submit |
+| **HTTP Method 支援** | 原生 Intent 自由定義 | 僅限 **GET** | 完整支援 **GET & POST** |
+| **資料載荷 (Payload)** | 極大 (原生字串/JSON 傳參) | 中等 (受限於 URL 長度) | **極大** (支援大量 POST Body 參數) |
+| **客戶端 App 依賴** | **高** (需 Android/iOS 雙端配合開發) | **零** (純 Web 標準技術) | **零** (純 Web 標準技術) |
+| **非同步超時抵抗力** | 🟢 **100% 免疫** (無手勢憑證問題) | 🟢 **100% 免疫** (等待在網路連線層) | 🟢 **100% 免疫** (同頁導航不觸發彈窗封殺) |
+| **最佳適用場景** | 自家企業 App 內嵌 H5 深度整合 | 無法修改 App 端、輕量 GET 跳轉 | 第三方金流支付、OAuth 敏感資料傳遞 |
+
 ## 4. 雙平台底層引擎對非同步 Token 的處置差異 (Event Loop)
 
 即使將原生的彈窗權限關閉，雙平台底層瀏覽器引擎對於「使用者點擊通行證 (User Gesture Token)」的生命週期，有著截然不同的底層實作：
@@ -118,7 +142,7 @@ iOS WebKit 的防禦機制與 Android (Chromium) 存在顯著差異，其歷史�
 在純 Web 開發中，前端工程師常使用一個知名的繞過技巧：「先同步開啟空白視窗 `window.open('', '_blank')`，等非同步請求完成後再修改 `location.href`」(可見於下方 StackOverflow 參考資料)。
 然而，**這個技巧在 Native App (In-App Browser / WebView) 開發中往往會引發災難**。當前端開啟空白視窗時，原生端的 `WKUIDelegate` 或 `WebChromeClient` 會第一時間攔截到一個網址為空 (`""`) 或 `about:blank` 的請求，導致原生端無法依據 URL 進行正確的攔截解析或 Deep Link 路由；若原生端勉強放行，使用者也會先看到令人困惑的白屏畫面，體驗極差。
 
-因此，由於跨平台雙引擎的生命週期判定機制完全不一致，加上 Web 端的 workaround 在原生環境水土不服，採用 **JSBridge** 讓原生端徹底接管行為，依舊是唯一能保證雙平台 100% 穩定運作的標準解法。
+因此，由於跨平台雙引擎的生命週期判定機制完全不一致，加上純前端的 workaround 在原生環境水土不服，採用 **JSBridge**（原生完全掌控）或 **伺服器端中繼架構（302 重新導向 / Form Bridge 表單跳轉）**，是唯三能保證雙平台 100% 穩定運作的標準解法。
 
 ## 5. 參考資料 (References)
 - 📖 [Chromium 官方部落格：User Activation v2 (UAv2) 機制介紹](https://developer.chrome.com/blog/user-activation)

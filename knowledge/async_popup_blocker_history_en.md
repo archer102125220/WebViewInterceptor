@@ -30,11 +30,11 @@ The purpose of this strict setting is to:
 When the front-end waits via `fetch` or `setTimeout`, the Event Loop is interrupted (it can be imagined as being cut into a thread different from the user operation event for subsequent actions). When the asynchronous task finishes and executes to `window.open`, the "physical click pass (User Gesture Token)" issued by the underlying system has expired or been lost.
 At this time, WebView will determine this is a **"malicious background popup without physical click (user operation) endorsement"**, and ruthlessly block it.
 
-## 3. Solution: JSBridge and Server-side 302 Redirect
+## 3. Solutions: JSBridge and Server-side Architectures (302 Redirect / Form Bridge)
 
-Facing the strict defense mechanisms mentioned above, purely front-end bypass techniques (like creating hidden `<a>` and triggering `.click()`) are extremely unstable and easily blocked. Currently, there are two standard solutions in the industry that guarantee a 100% success rate:
+Facing the strict defense mechanisms mentioned above, purely front-end bypass techniques (like creating hidden `<a>` and triggering `.click()`) are extremely unstable and easily blocked. Currently, there are three standard architectural solutions in the industry that guarantee a 100% success rate:
 
-### Solution 1: Abandon URL Interception, Embrace JSBridge (Most Common)
+### Solution 1: Abandon URL Interception, Embrace JSBridge (Most Common & Flexible)
 
 Do not go through the browser's `window.open` engine, but let the front-end "directly command" the native App to open the screen.
 
@@ -90,6 +90,30 @@ Instead of having the front-end call `fetch` and wait for the result before exec
 
 *(Additional Note: This method will cause the URL intercepted by the native end to be the intermediate API URL, rather than the final destination URL. If the native end has routing logic that relies on the URL content, you need to pay extra attention to this difference.)*
 
+### Solution 3: Server-side Intermediary Page + Web Form Navigation (Server-side Form Bridge: GET & POST)
+
+When the navigation target needs to **carry large payloads or POST sensitive parameters** (e.g., third-party payment gateways, OAuth authorization credentials), a simple 302 GET redirect may be inadequate (due to URL length limits and risks of leaking sensitive data in URL logs). In this case, "Server-side Intermediary Page + Form Navigation" is another robust architectural solution:
+
+1. **Front-end Synchronously Opens Intermediary Page**: Upon user click, the front-end synchronously executes `<a href="https://server.com/form-bridge?method=POST" target="_blank">` to open the server-hosted intermediary page.
+2. **Intermediary Page Fetches API & Assembles Form**: Once loaded in its own independent window, the intermediary page directly initiates an asynchronous `fetch` in `<script>` to request the target URL and form payload from the backend API.
+3. **Submit Same-page Form**: After receiving data, it dynamically creates a `<form method="POST" action="targetUrl">`, appends hidden inputs, and invokes `form.submit()`.
+
+**Advantages of Intermediary Form Bridge**:
+- **Full Support for POST & Large Payloads**: Breaks URL length limitations, perfectly accommodating complex business scenarios requiring POST data.
+- **Immune to Asynchronous Timeouts**: Because the new tab is opened "synchronously" upon user click, subsequent asynchronous API waiting inside the intermediary page (even if exceeding Android's 5s or iOS's 1s threshold) does not matter—the resulting `form.submit()` is a "same-page navigation" rather than "opening a new popup", entirely avoiding the WebView Popup Blocker!
+- *(Note: The mock-server in this project implements a demo of this mechanism, including regular and 6-second timeout tests, confirming that both platforms successfully allow navigation!)*
+
+### 📊 Deep Architectural Comparison of the Three Solutions
+
+| Dimension | 1. JSBridge Native Communication | 2. Server-side 302 Redirect | 3. Server-side Form Bridge |
+| :--- | :--- | :--- | :--- |
+| **Operating Mechanism** | Web calls native function; native invokes system browser directly | Front-end synchronously opens new tab; backend processes async and returns 302 Location | Front-end synchronously opens bridge page; bridge page fetches API and submits same-page form |
+| **HTTP Method Support** | Native Intents (Customizable) | **GET only** | Full **GET & POST** support |
+| **Data Payload Capacity** | Extremely high (Native JSON/String) | Moderate (Limited by URL length) | **Extremely high** (Supports large POST Body payloads) |
+| **Client App Dependency** | **High** (Requires native code in Android/iOS) | **Zero** (Pure Web standards) | **Zero** (Pure Web standards) |
+| **Async Timeout Immunity** | 🟢 **100% Immune** (No gesture token needed) | 🟢 **100% Immune** (Waiting is at network transport layer) | 🟢 **100% Immune** (Same-page form navigation doesn't trigger popup blocker) |
+| **Best Use Cases** | Enterprise in-house App tightly integrated with H5 | Unmodifiable App client, lightweight GET navigation | Third-party payment gateways, OAuth sensitive token transfers |
+
 ## 4. Differences in Underlying Engine Handling of Async Tokens Across Platforms (Event Loop)
 
 Even if the native popup permission is turned off, the underlying browser engines of the dual platforms have completely different underlying implementations for the life cycle of the "User Gesture Token":
@@ -118,7 +142,7 @@ iOS WebKit's defense mechanism has significant differences from Android (Chromiu
 In pure Web development, front-end engineers often use a well-known bypass trick: "First open a blank window synchronously `window.open('', '_blank')`, wait for the asynchronous request to complete, then modify `location.href`" (can be seen in StackOverflow references below).
 However, **this trick often triggers a disaster in Native App (In-App Browser / WebView) development**. When the front-end opens a blank window, the native end's `WKUIDelegate` or `WebChromeClient` will intercept a request with an empty URL (`""`) or `about:blank` in the first time, causing the native end to be unable to parse the interception or route the Deep Link correctly based on the URL; if the native end reluctantly allows it to pass, the user will first see a confusing blank screen, leading to a terrible experience.
 
-Therefore, because the life cycle determination mechanisms of the dual-platform engines are completely inconsistent, coupled with the fact that the Web-end workaround is not acclimatized in the native environment, adopting **JSBridge** to let the native end completely take over the behavior remains the only standard solution that guarantees 100% stable operation across both platforms.
+Therefore, because the life cycle determination mechanisms of the dual-platform engines are completely inconsistent, coupled with the fact that purely front-end workarounds fail in native environments, adopting **JSBridge** (native total control) or **Server-side Intermediary Architectures (302 Redirect / Form Bridge)** are the only three standard solutions that guarantee 100% stable operation across both platforms.
 
 ## 5. References
 - 📖 [Chromium Official Blog: User Activation v2 (UAv2) Mechanism Introduction](https://developer.chrome.com/blog/user-activation)
