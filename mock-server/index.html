@@ -38,6 +38,12 @@
         a.button-style.btn-orange {
             background-color: #fd7e14;
         }
+        a.button-style.btn-purple {
+            background-color: #6f42c1;
+        }
+        a.button-style.btn-danger {
+            background-color: #d63384;
+        }
         button:hover, a.button-style:hover {
             opacity: 0.9;
         }
@@ -67,15 +73,27 @@
     </div>
 
     <div class="test-case">
-        <h2>實驗 3：中繼頁面 API + Form GET 跳轉</h2>
+        <h2>實驗 3：中繼頁面 API + Form GET 跳轉 (常規 0.6 秒)</h2>
         <p>以 <code>target="_blank"</code> 開啟 <code>/form-bridge?method=GET</code>，中繼頁載入時於 <code>&lt;script&gt;</code> 內直接呼叫 API 取得參數，並透過 Form GET 跳轉到結果頁。</p>
         <a href="/form-bridge?method=GET" target="_blank" class="button-style btn-green">測試 Form GET 中繼跳轉 (_blank)</a>
     </div>
 
     <div class="test-case">
-        <h2>實驗 4：中繼頁面 API + Form POST 跳轉</h2>
+        <h2>實驗 4：中繼頁面 API + Form POST 跳轉 (常規 0.6 秒)</h2>
         <p>以 <code>target="_blank"</code> 開啟 <code>/form-bridge?method=POST</code>，中繼頁載入時於 <code>&lt;script&gt;</code> 內直接呼叫 API 取得參數，並透過 Form POST 跳轉到結果頁。</p>
         <a href="/form-bridge?method=POST" target="_blank" class="button-style btn-orange">測試 Form POST 中繼跳轉 (_blank)</a>
+    </div>
+
+    <div class="test-case">
+        <h2>實驗 5：中繼頁面 API + Form GET 跳轉 (⏳ 延遲 6 秒超時測試)</h2>
+        <p>測試當中繼頁面的 API 請求耗時長達 6 秒（突破 Android UAv2 5 秒憑證門檻）時，Form GET 跳轉是否依然能順利執行。</p>
+        <a href="/form-bridge?method=GET&delay=6000" target="_blank" class="button-style btn-purple">測試 Form GET (延遲 6 秒) (_blank)</a>
+    </div>
+
+    <div class="test-case">
+        <h2>實驗 6：中繼頁面 API + Form POST 跳轉 (⏳ 延遲 6 秒超時測試)</h2>
+        <p>測試當中繼頁面的 API 請求耗時長達 6 秒（突破 Android UAv2 5 秒憑證門檻）時，Form POST 跳轉是否依然能順利執行。</p>
+        <a href="/form-bridge?method=POST&delay=6000" target="_blank" class="button-style btn-danger">測試 Form POST (延遲 6 秒) (_blank)</a>
     </div>
 
 </body>

@@ -36,6 +36,7 @@
             color: #495057;
             font-size: 16px;
             margin-top: 15px;
+            line-height: 1.5;
         }
         .badge {
             display: inline-block;
@@ -47,6 +48,16 @@
         }
         .badge-get { background-color: #e7f5ff; color: #1c7ed6; }
         .badge-post { background-color: #fff3bf; color: #d9480f; }
+        .timer-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 10px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #495057;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -55,33 +66,52 @@
         <div id="methodBadge" class="badge">檢測中...</div>
         <div class="spinner"></div>
         <p id="status" class="status">正在向 API 請求目的地 URL 與表單參數...</p>
+        <div id="timer" class="timer-badge">耗時：0.0 秒</div>
     </div>
 
     <script>
         async function executeFormBridge() {
             const statusEl = document.getElementById('status');
             const badgeEl = document.getElementById('methodBadge');
+            const timerEl = document.getElementById('timer');
             
             const searchParams = new URLSearchParams(window.location.search);
             const requestedMethod = (searchParams.get('method') || 'GET').toUpperCase();
-            
+            const delayParam = searchParams.get('delay') || '600';
+            const delayMs = parseInt(delayParam, 10) || 600;
+
+            const delayText = delayMs >= 1000 ? ` (延遲 ${(delayMs / 1000).toFixed(1)} 秒)` : '';
+
             if (requestedMethod === 'POST') {
                 badgeEl.className = 'badge badge-post';
-                badgeEl.innerText = '模式：Form POST';
+                badgeEl.innerText = '模式：Form POST' + delayText;
             } else {
                 badgeEl.className = 'badge badge-get';
-                badgeEl.innerText = '模式：Form GET';
+                badgeEl.innerText = '模式：Form GET' + delayText;
             }
 
+            // 計時器顯示已等待秒數
+            const startTime = Date.now();
+            const timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                timerEl.innerText = `已等待：${elapsed} 秒 / 目標延遲：${(delayMs / 1000).toFixed(1)} 秒`;
+            }, 100);
+
             try {
-                // 1. 呼叫 Server API 取得目的地 URL 與參數
-                statusEl.innerText = '正在向 /api/target-info 發送 API 請求...';
-                const response = await fetch('/api/target-info?method=' + encodeURIComponent(requestedMethod));
+                // 1. 呼叫 Server API 取得目的地 URL 與參數 (傳遞 delay 參數)
+                statusEl.innerText = `正在向 /api/target-info 發送 API 請求${delayText}...`;
+                const apiUrl = `/api/target-info?method=${encodeURIComponent(requestedMethod)}&delay=${encodeURIComponent(delayMs)}`;
+                
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error('API 回應錯誤 (' + response.status + ')');
                 }
                 
                 const data = await response.json();
+                clearInterval(timerInterval);
+                const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+                timerEl.innerText = `API 耗時完成：共 ${totalElapsed} 秒`;
+
                 const targetUrl = data.targetUrl || '/form-result';
                 const method = (data.method || requestedMethod).toUpperCase();
                 const params = data.params || {};
@@ -107,6 +137,7 @@
                 // 3. 提交表單跳轉
                 form.submit();
             } catch (error) {
+                clearInterval(timerInterval);
                 statusEl.style.color = '#dc3545';
                 statusEl.innerText = '跳轉失敗：' + error.message;
             }

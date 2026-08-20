@@ -239,7 +239,9 @@ const server = http.createServer(async (req, res) => {
     const requestedMethod = (
       parsedUrl.searchParams.get("method") || "GET"
     ).toUpperCase();
-    const delay = 600; // 模擬 600ms API 延遲
+    const delayParam = parsedUrl.searchParams.get("delay");
+    const delay = delayParam ? parseInt(delayParam, 10) : 600; // 支援動態延遲 (預設 600ms)
+    console.log(`[API] /api/target-info requested: method=${requestedMethod}, delay=${delay}ms`);
 
     setTimeout(() => {
       res.writeHead(200, {
@@ -259,6 +261,7 @@ const server = http.createServer(async (req, res) => {
             timestamp: new Date().toISOString(),
             formMethod: requestedMethod,
             source: "mock_server_api",
+            apiDelay: delay + "ms",
           },
         }),
       );
